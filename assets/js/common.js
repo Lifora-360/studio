@@ -27,7 +27,7 @@ export function clearSharedClient() { store.remove(CLIENT_KEY); }
 /* ---------- fonts: canvas + html2canvas need them decoded first ---------- */
 export async function fontsReady() {
   const faces = [
-    '600 40px Cormorant', '500 40px Cormorant', 'italic 500 40px Cormorant',
+    '400 40px "Playfair Display"', '500 40px "Playfair Display"', '600 40px "Playfair Display"', 'italic 400 40px "Playfair Display"',
     '400 20px Figtree', '500 20px Figtree', '600 20px Figtree', '700 20px Figtree', '800 20px Figtree'
   ];
   try {
@@ -125,4 +125,17 @@ export const ICON = {
   share: '<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4M8.2 13.2l7.6 4"/></svg>'
 };
 
-export const DOCTORS = ['Dr Prakash', 'Dr Sajith', 'Dr Navanith', 'Dr Divya'];
+
+/* ---------- images (logo) ---------- */
+const imgCache = new Map();
+export function loadImage(src) {
+  if (!imgCache.has(src)) {
+    imgCache.set(src, new Promise((resolve) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = () => resolve(null);
+      i.src = src;
+    }));
+  }
+  return imgCache.get(src);
+}
