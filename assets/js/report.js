@@ -214,11 +214,26 @@ function collect() {
 /* ==========================================================================
    Page building + pagination
    ========================================================================== */
+/* Tiny leaf bullet. Inline <svg> (not a CSS background) so html2canvas always draws it. */
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function leaf() {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 12 12'); svg.setAttribute('class', 'leaf'); svg.setAttribute('aria-hidden', 'true');
+  const body = document.createElementNS(SVG_NS, 'path');
+  body.setAttribute('d', 'M1.6 10.4C1.6 5.2 4.8 1.6 10.4 1.6C10.4 6.8 7.2 10.4 1.6 10.4Z');
+  body.setAttribute('fill', '#3f7a71');
+  const vein = document.createElementNS(SVG_NS, 'path');
+  vein.setAttribute('d', 'M2.4 9.6L8.2 3.8');
+  vein.setAttribute('stroke', '#ffffff'); vein.setAttribute('stroke-width', '0.9'); vein.setAttribute('stroke-linecap', 'round'); vein.setAttribute('fill', 'none');
+  svg.append(body, vein);
+  return svg;
+}
+
 function blockNode(b) {
   const d = el('div', 'pg-block');
   d.appendChild(el('h3', null, b.title));
   const ul = el('ul');
-  b.items.forEach((t) => ul.appendChild(el('li', null, t)));
+  b.items.forEach((t) => { const li = el('li'); li.append(leaf(), el('span', null, t)); ul.appendChild(li); });
   d.appendChild(ul);
   return d;
 }

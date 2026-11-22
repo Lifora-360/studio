@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Payment · Lifora</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="../assets/img/favicon.png" type="image/png">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/pay.css">
+</head>
+<body class="checkout-body">
+<main class="checkout">
+  <header class="co-brand"><img src="../assets/img/emblem.webp" alt="" width="36" height="34"><span>Lifora</span></header>
+
+  <section id="loading" class="co-card" aria-busy="true"><p class="co-muted">Loading your payment…</p></section>
+
+  <section id="due" class="co-card" hidden>
+    <p class="co-for" id="coFor"></p>
+    <p class="co-amount" id="coAmount"></p>
+    <p class="co-purpose" id="coPurpose"></p>
+
+    <a class="btn btn-primary co-pay" id="coPay" href="#">Pay with a UPI app</a>
+    <p class="co-hint" id="coHint">Opens Google Pay, PhonePe, Paytm or your bank’s app with the amount filled in.</p>
+
+    <div class="co-qr" id="coQrWrap">
+      <div id="coQr" class="qr" role="img" aria-label="UPI QR code"></div>
+      <p class="co-muted">Scan with any UPI app</p>
+    </div>
+    <button class="linkbtn co-showqr" id="coShowQr" type="button" hidden>Show QR code instead</button>
+
+    <dl class="co-to">
+      <div><dt>Paying to</dt><dd><span id="coPayee"></span></dd></div>
+      <div><dt>UPI ID</dt><dd><span id="coUpi"></span> <button class="linkbtn" data-copy="upi" type="button">Copy</button></dd></div>
+      <div><dt>Amount</dt><dd><span id="coAmt2"></span> <button class="linkbtn" data-copy="amount" type="button">Copy</button></dd></div>
+    </dl>
+
+    <form class="co-ref" id="coRefForm" novalidate>
+      <h2>Paid already?</h2>
+      <p class="co-muted">Enter the 12-digit UTR or transaction ID from your UPI app so we can match your payment.</p>
+      <div class="co-ref-row">
+        <input id="coRef" inputmode="text" autocomplete="off" maxlength="40" placeholder="e.g. 431245678901" aria-label="Transaction reference">
+        <button class="btn btn-line" type="submit">Send</button>
+      </div>
+      <p class="co-msg" id="coRefMsg" role="status"></p>
+    </form>
+
+    <p class="co-safe">Lifora will never ask for your UPI PIN or an OTP. Check the name and amount in your app before you approve.</p>
+  </section>
+
+  <section id="reported" class="co-card co-state" hidden>
+    <div class="co-icon co-icon-wait" aria-hidden="true"></div>
+    <h1>Thanks, we’ve got your reference</h1>
+    <p class="co-muted">We’ll confirm once the payment shows in our account. This link will then say “Paid”.</p>
+  </section>
+
+  <section id="paid" class="co-card co-state" hidden>
+    <div class="co-icon co-icon-ok" aria-hidden="true"></div>
+    <h1>Paid</h1>
+    <p class="co-amount co-amount-sm" id="paidAmount"></p>
+    <p class="co-muted" id="paidText"></p>
+  </section>
+
+  <section id="missing" class="co-card co-state" hidden>
+    <h1>This payment link isn’t available</h1>
+    <p class="co-muted">It may have expired or been typed incorrectly. Ask your Lifora care team for a new link.</p>
+  </section>
+
+  <footer class="co-foot">A journey to a better life</footer>
+</main>
+<script type="module" src="../assets/js/checkout.js"></script>
+</body>
+</html>

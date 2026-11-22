@@ -1,0 +1,91 @@
+/* ==========================================================================
+   Payments — public checkout + admin register. Builds on base.css tokens.
+   ========================================================================== */
+
+/* ---------- checkout (customer-facing, phone first) ---------- */
+.checkout-body{background:var(--mist)}
+.checkout{max-width:460px;margin:0 auto;padding:28px 16px 40px;min-height:100dvh;display:flex;flex-direction:column}
+.co-brand{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--teal);margin-bottom:22px}
+.co-brand img{width:36px;height:auto}
+.co-brand span{font:500 24px/1 var(--serif)}
+.co-card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:28px 24px;box-shadow:0 1px 2px #0e3b380d,0 12px 32px #0e3b380f}
+.co-for{margin:0;font-size:14px;color:var(--muted);font-weight:600}
+.co-amount{margin:6px 0 4px;font:600 46px/1.1 var(--sans);letter-spacing:-.02em;color:var(--teal);font-variant-numeric:tabular-nums lining-nums}
+.co-amount-sm{font-size:34px;margin:6px 0 10px}
+.co-purpose{margin:0 0 24px;font:400 17px/1.4 var(--serif);color:var(--ink)}
+.co-pay{width:100%;padding:16px 18px;font-size:16px;border-radius:12px}
+.co-hint{font-size:12.5px;color:var(--muted);text-align:center;margin:10px 0 0}
+.co-qr{display:flex;flex-direction:column;align-items:center;gap:8px;margin:22px 0 4px}
+.qr{width:220px;height:220px;padding:12px;background:#fff;border:1px solid var(--line);border-radius:12px}
+.qr svg{display:block;width:100%;height:100%}
+.co-showqr{display:block;margin:16px auto 0}
+.desk .co-qr{margin-top:4px}
+.co-to{margin:26px 0 0;padding:16px 0 0;border-top:1px solid var(--line);display:grid;gap:10px}
+.co-to div{display:flex;justify-content:space-between;gap:12px;font-size:14px}
+.co-to dt{color:var(--muted)}
+.co-to dd{margin:0;font-weight:600;text-align:right;overflow-wrap:anywhere}
+.co-to .linkbtn{font-size:12.5px;margin-left:6px}
+.co-ref{margin-top:24px;padding-top:20px;border-top:1px solid var(--line)}
+.co-ref h2{font:600 15px var(--sans);color:var(--teal);margin:0 0 4px}
+.co-ref .co-muted{font-size:13px;margin:0 0 12px}
+.co-ref-row{display:flex;gap:8px}
+.co-ref-row input{flex:1;min-width:0;border:1px solid var(--line-2);border-radius:8px;padding:10px 12px;font-size:16px;letter-spacing:.04em;text-transform:uppercase}
+.co-ref-row input:focus{border-color:var(--teal);outline:none;box-shadow:var(--focus)}
+.co-msg{font-size:13px;color:var(--muted);margin:8px 0 0;min-height:18px}
+.co-msg.err{color:var(--alert)}
+.co-safe{font-size:12px;color:var(--muted);line-height:1.5;margin:22px 0 0;padding:12px 14px;background:var(--mist);border-radius:10px}
+.co-muted{color:var(--muted);margin:0}
+.co-state{text-align:center}
+.co-state h1{font:500 28px/1.2 var(--serif);color:var(--teal);margin:8px 0 8px}
+.co-state .linkbtn{margin-top:18px}
+.co-icon{width:56px;height:56px;border-radius:50%;margin:0 auto;display:grid;place-items:center}
+.co-icon-ok{background:#e5f1ec}
+.co-icon-ok::after{content:'';width:22px;height:12px;border-left:3px solid var(--teal);border-bottom:3px solid var(--teal);transform:rotate(-45deg) translate(2px,-2px)}
+.co-icon-wait{background:#f6efe0}
+.co-icon-wait::after{content:'';width:18px;height:18px;border:3px solid var(--gold);border-radius:50%;border-top-color:transparent}
+.co-foot{margin-top:auto;padding-top:28px;text-align:center;font:italic 400 13px var(--serif);color:var(--faint)}
+
+/* ---------- admin register ---------- */
+.pay-admin{max-width:1180px;margin:0 auto;padding:36px 28px 64px}
+.signin{max-width:400px;margin:56px auto 0}
+.signin .btn{width:100%;margin-top:18px}
+.pay-grid{display:grid;grid-template-columns:minmax(320px,400px) minmax(0,1fr);gap:40px;align-items:start;margin-top:28px}
+.pay-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.preset{border:1px solid var(--line-2);background:var(--paper);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--teal);cursor:pointer}
+.preset:hover{border-color:var(--teal)}
+.result{margin-top:18px;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--mist)}
+.result a{display:block;font-size:13px;overflow-wrap:anywhere;margin:6px 0 12px;color:var(--teal)}
+.result .row{display:flex;gap:8px;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stats div{background:var(--paper);padding:14px 16px}
+.stats span{display:block;font-size:12.5px;color:var(--muted)}
+.stats b{display:block;font-size:20px;color:var(--teal);margin-top:2px;font-variant-numeric:tabular-nums}
+.filters{display:flex;gap:4px;margin:22px 0 10px;flex-wrap:wrap}
+.filters button{border:0;background:none;padding:7px 12px;border-radius:999px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--teal);color:#fff}
+.filters input{margin-left:auto;border:1px solid var(--line-2);border-radius:8px;padding:7px 10px;font-size:14px;min-width:0;width:200px}
+.reqs{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.req{display:grid;grid-template-columns:1fr auto;gap:6px 16px;padding:16px 2px;border-bottom:1px solid var(--line)}
+.req-name{font-weight:700}
+.req-sub{font-size:13px;color:var(--muted)}
+.req-amt{font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+.req-acts{grid-column:1/-1;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.chip{display:inline-block;font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 9px;margin-left:8px;vertical-align:1px}
+.chip.pending{background:#f6efe0;color:#7a5a1d}
+.chip.reported{background:#fff1d6;color:#8a5a00}
+.chip.paid{background:#e5f1ec;color:#1d5752}
+.chip.expired{background:var(--mist);color:var(--muted)}
+.utr{font-size:12.5px;color:#8a5a00;background:#fff8e8;border-radius:6px;padding:3px 8px}
+.empty{color:var(--muted);padding:24px 2px}
+dialog{border:0;border-radius:16px;padding:24px;max-width:420px;width:calc(100% - 32px);box-shadow:0 24px 60px #0e3b3833}
+dialog::backdrop{background:#0e3b3840}
+dialog h2{font:500 22px/1.2 var(--serif);color:var(--teal);margin:0 0 6px}
+dialog .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+@media (max-width:900px){
+  .pay-admin{padding:24px 16px 48px}
+  .pay-grid{grid-template-columns:minmax(0,1fr);gap:32px}
+  .filters input{width:100%;margin:6px 0 0}
+}
+.co-ref-row input::placeholder{text-transform:none;letter-spacing:0}
+.result a.btn{display:inline-flex;color:#fff;margin:0;font-size:14px}

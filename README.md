@@ -6,8 +6,10 @@ Browser tools the Lifora care team uses to make client material.
 | --- | --- | --- |
 | Client profile picture | `/profile/` | 1600 × 1600 PNG for the client's WhatsApp care-team group |
 | Investigation report | `/report/` | Branded A4 PDF listing the tests the client should get done |
+| Payments (admin) | `/payments/` | Sign-in register: create UPI payment links, send on WhatsApp, mark paid |
+| Checkout (customers) | `/pay/?id=…` | Public page a client opens to pay by UPI app or QR |
 
-Both tools run entirely in the browser. Client details are never sent to a server: the PNG and PDF are
+The profile and report tools run entirely in the browser. Client details are never sent to a server: the PNG and PDF are
 generated on the device, and drafts are kept in that browser's `localStorage` only (cleared with
 **Start a new client**). Name and age typed in one tool are carried over to the other.
 
@@ -24,7 +26,21 @@ existing conditions, allergies and intolerances (allergies turn red when present
 client's own words. No program, doctor, phone number or client ID on the card.
 
 **Test report**: A4 PDF with the client's name, age and sex, tests grouped into profiles with a tick
-box beside each, and short preparation notes on the last page. Long selections continue onto more pages.
+small leaf beside each, and short preparation notes on the last page. Long selections continue onto more pages.
+
+## Payments
+
+Merged from the former `Lifora-360/payment` repo. Plain UPI payment requests stored in Supabase
+(project `xjqcurdcgxejhqixfdwz`), with manual reconciliation. **Not a payment gateway**: the site cannot
+see whether money arrived. Check the bank/UPI app before marking a request paid.
+
+- Config (Supabase URL, public key, UPI ID, amount presets): `assets/js/pay-config.js`.
+- Schema: `supabase/schema.sql` (original) + `supabase/migrations/20261122_checkout_v2.sql`
+  (lets a client report their UTR after paying; shows "Paid" on links after expiry). The checkout works
+  without the migration; it only enables those two features.
+- Old links in the form `/?pay=<id>` redirect to `/pay/?id=<id>`.
+- Checkout must be publicly reachable: turn off Vercel Authentication for production, or use a
+  custom domain.
 
 ## Running locally
 
@@ -55,7 +71,11 @@ assets/js/profile.js    canvas drawing for the profile picture
 assets/js/report.js     test catalogue, pagination, PDF export
 assets/fonts/           Playfair Display + Figtree (SIL OFL)
 assets/img/             lotus emblem, logo lockup, favicon
-vendor/                 html2canvas 1.4.1, jsPDF 2.5.1 (MIT)
+pay/, payments/         checkout and admin pages
+assets/js/checkout.js   public checkout
+assets/js/payments.js   admin register
+supabase/               database schema and migrations
+vendor/                 html2canvas 1.4.1, jsPDF 2.5.1, supabase-js 2.58.0, qrcode-generator 1.4.4 (MIT)
 ```
 
 Editing the test catalogue: `PACKAGES` (what appears in the sidebar) and `OUTPUT` (how tests are grouped

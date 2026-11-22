@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Payments · Lifora</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="../assets/img/favicon.png" type="image/png">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/pay.css">
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="../"><img src="../assets/img/emblem.webp" alt="" width="30" height="28"><span>Lifora</span></a>
+  <nav class="tabs" aria-label="Tools">
+    <a href="../profile/">Profile picture</a>
+    <a href="../report/">Test report</a>
+    <a href="./" aria-current="page">Payments</a>
+  </nav>
+</header>
+
+<main class="pay-admin">
+  <section id="signin" class="signin" hidden>
+    <h1 class="form-title">Payments</h1>
+    <p class="form-lede">Sign in to create payment links and keep the register.</p>
+    <form id="signinForm" class="fields" style="grid-template-columns:1fr;margin-top:24px" novalidate>
+      <div class="f"><label for="email">Email</label><input id="email" type="email" autocomplete="username" required></div>
+      <div class="f"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+      <button class="btn btn-primary" type="submit">Sign in</button>
+      <p class="f"><span class="error" id="signinErr" style="display:block"></span></p>
+    </form>
+  </section>
+
+  <section id="app" hidden>
+    <div class="pay-head">
+      <div>
+        <h1 class="form-title">Payments</h1>
+        <p class="form-lede">Create a UPI payment link, send it on WhatsApp, and mark it paid once the money shows in the bank.</p>
+      </div>
+      <button class="linkbtn" id="signout" type="button">Sign out</button>
+    </div>
+
+    <div class="pay-grid">
+      <form id="newForm" novalidate>
+        <div class="group" style="margin-top:0">
+          <h2>New payment link</h2>
+          <div class="presets" id="presets"></div>
+          <div class="fields">
+            <div class="f wide"><label for="cName">Client name</label><input id="cName" maxlength="100" autocomplete="off" required></div>
+            <div class="f wide"><label for="cPhone">WhatsApp number <span class="count">optional</span></label><input id="cPhone" inputmode="tel" maxlength="16" placeholder="98765 43210" autocomplete="off"></div>
+            <div class="f wide"><label for="cPurpose">What it’s for</label><input id="cPurpose" maxlength="140" placeholder="e.g. Consultation fee" required></div>
+            <div class="f"><label for="cAmount">Amount</label><div class="unit"><input id="cAmount" type="number" inputmode="decimal" min="1" max="10000000" step="0.01" required><span>INR</span></div></div>
+            <div class="f"><label for="cDays">Link works for</label><select id="cDays"><option value="1">1 day</option><option value="3">3 days</option><option value="7" selected>7 days</option><option value="30">30 days</option></select></div>
+          </div>
+          <p class="f"><span class="error" id="newErr" style="display:block"></span></p>
+          <button class="btn btn-primary" type="submit" id="createBtn" style="width:100%"><span class="spinner"></span>Create payment link</button>
+          <div class="result" id="result" hidden></div>
+          <p class="privacy">The amount is saved with the link and can’t be changed by whoever opens it. Keep names and purposes general; anyone with the link can see them.</p>
+        </div>
+      </form>
+
+      <section aria-label="Register">
+        <div class="stats">
+          <div><span id="sPendingLabel">Waiting</span><b id="sPending">—</b></div>
+          <div><span>Client says paid</span><b id="sReported">—</b></div>
+          <div><span>Received this month</span><b id="sMonth">—</b></div>
+        </div>
+        <div class="filters" role="group" aria-label="Filter">
+          <button type="button" data-f="open" aria-pressed="true">To collect</button>
+          <button type="button" data-f="paid" aria-pressed="false">Paid</button>
+          <button type="button" data-f="expired" aria-pressed="false">Expired</button>
+          <button type="button" data-f="all" aria-pressed="false">All</button>
+          <input id="q" type="search" placeholder="Search name or purpose" aria-label="Search">
+        </div>
+        <ul class="reqs" id="list"><li class="empty">Loading…</li></ul>
+        <p class="privacy">“Paid” is your own record. Check the credit in your bank or UPI app before marking a request paid.</p>
+      </section>
+    </div>
+  </section>
+</main>
+
+<dialog id="paidDialog">
+  <form method="dialog" id="paidForm">
+    <h2>Mark as paid</h2>
+    <p class="co-muted" id="paidWho"></p>
+    <div class="f" style="margin-top:14px"><label for="paidRef">Transaction reference (UTR)</label><input id="paidRef" maxlength="120" autocomplete="off"></div>
+    <p class="co-muted" style="font-size:12.5px;margin-top:8px">Only after you’ve seen the money in the account.</p>
+    <div class="acts"><button class="btn btn-line" value="cancel" type="submit">Cancel</button><button class="btn btn-primary" value="ok" type="submit">Mark paid</button></div>
+  </form>
+</dialog>
+<script type="module" src="../assets/js/payments.js"></script>
+</body>
+</html>

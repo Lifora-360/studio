@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#ffffff">
 <link rel="icon" href="assets/img/favicon.png" type="image/png">
 <link rel="stylesheet" href="assets/css/base.css">
+<script>(function(){var p=new URLSearchParams(location.search).get("pay");if(p)location.replace("pay/?id="+encodeURIComponent(p));})();</script>
 <style>
   .home{max-width:880px;margin:0 auto;padding:72px 32px 56px;min-height:100dvh;display:flex;flex-direction:column}
   .lockup{width:132px;height:auto;display:block}
@@ -36,6 +37,10 @@
     </a>
     <a class="row" href="report/">
       <div><h2>Test report</h2><p>Pick tests from Lifora 1, Lifora 2, specialised and GLP-1 panels. Get an A4 PDF the client takes to the lab.</p></div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </a>
+    <a class="row" href="payments/">
+      <div><h2>Payments</h2><p>Create a UPI payment link, send it on WhatsApp, and keep track of what’s been paid. Needs sign-in.</p></div>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
     </a>
   </nav>

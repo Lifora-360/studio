@@ -69,8 +69,8 @@
 .pg-content{display:grid;grid-template-columns:1fr 1fr;column-gap:56px;row-gap:30px;align-content:start;overflow:hidden}
 .pg-block h3{margin:0 0 10px;font-size:14px;font-weight:700;color:var(--teal);padding-bottom:8px;border-bottom:1px solid var(--line)}
 .pg-block ul{margin:0;padding:0;list-style:none}
-.pg-block li{display:flex;gap:11px;align-items:flex-start;font-size:13.5px;line-height:1.45;padding:4px 0}
-.pg-block li::before{content:'';width:11px;height:11px;border:1.3px solid #b9c4c1;border-radius:2px;flex:none;margin-top:3px}
+.pg-block li{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.45;padding:4px 0}
+.pg-block li .leaf{width:11px;height:11px;flex:none;margin-top:5px}
 .pg-empty{grid-column:1/-1;font-size:15px;color:var(--faint);padding-top:40px}
 
 .pg-note{display:grid;grid-template-columns:1fr 1fr;column-gap:56px;padding-top:22px;border-top:1px solid var(--line)}
