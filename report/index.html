@@ -20,12 +20,14 @@
   </nav>
 </header>
 
-<main class="studio">
+<main class="studio with-rail">
+  <nav class="rail-col" aria-label="Jump to section"><ul class="bounce" id="rail"></ul></nav>
+
   <section class="form-col" aria-label="Report details">
     <h1 class="form-title">Test report</h1>
     <p class="form-lede">Pick the tests this client needs. They’re grouped into profiles on an A4 PDF to take to the lab.</p>
 
-    <div class="group">
+    <div class="group" id="secClient">
       <h2>Client</h2>
       <div class="fields">
         <div class="f wide" id="nameField">
@@ -53,7 +55,7 @@
       <div class="search-count" id="searchCount" aria-live="polite"></div>
       <div id="packages"></div>
 
-      <div class="custom">
+      <div class="custom" id="secCustom">
         <label for="customTest" class="custom-label">Something not listed?</label>
         <div class="custom-row">
           <input id="customTest" placeholder="e.g. Ultrasound abdomen" maxlength="60">

@@ -155,3 +155,19 @@ a{color:inherit}
 .ctr-sz{grid-area:1/1;visibility:hidden}
 .ctr-st{position:absolute;left:0;right:0;top:0;will-change:transform}
 .ctr-st>span{display:flex;align-items:center;justify-content:center;height:1.5em}
+
+/* ---------- bounce sidebar (see rail.js) ---------- */
+.rail-col{display:none}
+@media (min-width:1280px){
+  .studio.with-rail{grid-template-columns:176px minmax(340px,460px) minmax(0,1fr)}
+  .rail-col{display:block;border-right:1px solid var(--line);padding:40px 12px 40px 20px}
+  .rail-col .bounce{position:sticky;top:104px}
+}
+.bounce{position:relative;list-style:none;margin:0;padding:0 0 0 24px;display:flex;flex-direction:column;gap:4px}
+.bounce-dot{position:absolute;left:8px;top:0;width:6px;height:6px;border-radius:50%;background:var(--gold);opacity:0;transition:opacity .15s;will-change:transform}
+.bounce.ready .bounce-dot{opacity:1}
+.bounce-item{display:flex;width:100%;align-items:center;padding:4px;border:0;background:none;border-radius:8px;text-align:left;font-size:14px;color:color-mix(in srgb,var(--ink) 50%,transparent);cursor:pointer;transition:color .2s;text-decoration:none}
+.bounce-item:hover{color:var(--ink)}
+.bounce-item[data-active="true"]{color:var(--ink)}
+.bounce-heading{padding:28px 4px 4px;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.bounce-heading:first-child{padding-top:0}

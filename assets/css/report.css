@@ -92,3 +92,4 @@
   .page{box-shadow:none;margin:0 auto;break-after:page;zoom:.775;print-color-adjust:exact;-webkit-print-color-adjust:exact}
   .page:last-child{break-after:auto}
 }
+#secClient,.pkg,#secCustom{scroll-margin-top:84px}

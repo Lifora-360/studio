@@ -1,6 +1,7 @@
 import { $, store, readSharedClient, writeSharedClient, clearSharedClient, fontsReady, frameScheduler,
   safePart, prettyDate, today, downloadBlob, shareBlob, canShareFiles, toast, loadScript, ICON, dynamicButton } from './common.js';
 import { counter } from './counter.js';
+import { bounceSidebar } from './rail.js';
 let selCounter = null;
 
 /* ==========================================================================
@@ -88,6 +89,7 @@ function buildPackages() {
   const root = $('packages');
   PACKAGES.forEach((pkg, pi) => {
     const det = el('details', 'pkg');
+    det.id = 'pkg-' + pi;
     if (pi === 0) det.open = true;
     const sum = el('summary');
     const name = el('span', 'pkg-name', pkg.name);
@@ -489,12 +491,55 @@ async function onShare() {
 }
 
 /* ==========================================================================
+   Jump list (wide screens): dot follows the section you're reading
+   ========================================================================== */
+function wireRail() {
+  const ul = $('rail');
+  if (!ul) return;
+  const sections = [
+    { label: 'Client', el: $('secClient') },
+    ...PACKAGES.map((p, i) => ({ label: p.name, el: $('pkg-' + i), pkg: true })),
+    { label: 'Custom', el: $('secCustom') }
+  ];
+  let jumping = 0;
+  const rail = bounceSidebar(ul, {
+    items: sections.map((s) => s.label),
+    onChange: (i) => {
+      const s = sections[i];
+      if (s.pkg) s.el.open = true;
+      // Let the dot rest on the clicked item until the page has finished scrolling there.
+      clearTimeout(jumping);
+      jumping = setTimeout(() => { jumping = 0; }, 400);
+      s.el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    }
+  });
+  let queued = false;
+  const spy = () => {
+    queued = false;
+    if (jumping || !ul.offsetParent) return;
+    // The section whose top has crossed ~40% of the screen is the one being read.
+    const line = Math.max(140, window.innerHeight * 0.4);
+    let current = 0;
+    sections.forEach((s, i) => { if (!s.el.closest('.hidden-by-search') && s.el.getBoundingClientRect().top <= line) current = i; });
+    // At the very bottom a short last section may never reach the line; pick it only if it's really on screen.
+    const last = sections[sections.length - 1].el.getBoundingClientRect().top;
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4 && last < window.innerHeight * 0.85) current = sections.length - 1;
+    rail.set(current);
+  };
+  window.addEventListener('scroll', () => {
+    if (jumping) { clearTimeout(jumping); jumping = setTimeout(() => { jumping = 0; }, 150); return; }   // still travelling
+    if (!queued) { queued = true; requestAnimationFrame(spy); }
+  }, { passive: true });
+}
+
+/* ==========================================================================
    Init
    ========================================================================== */
 async function init() {
   document.querySelectorAll('[data-icon]').forEach((n) => { n.outerHTML = ICON[n.dataset.icon]; });
   buildPackages();
   wireSearch();
+  wireRail();
   loadDraft();
   renderCustom();
   const form = document.querySelector('.form-col');
