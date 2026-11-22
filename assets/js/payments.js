@@ -109,6 +109,11 @@ function render() {
     const acts = el('div', 'req-acts');
     if (r.customer_reference && r.state !== 'paid') acts.appendChild(el('span', 'utr', 'UTR ' + r.customer_reference));
     if (r.state === 'paid' && r.transaction_ref) acts.appendChild(el('span', 'req-sub', 'Ref ' + r.transaction_ref));
+    if (r.state === 'paid') {
+      const rc = el('a', 'linkbtn', 'Receipt'); rc.href = checkoutLink(r.id); rc.target = '_blank'; rc.rel = 'noopener';
+      const cr = el('button', 'linkbtn', 'Copy receipt link'); cr.type = 'button'; cr.addEventListener('click', () => copy(checkoutLink(r.id)));
+      acts.append(rc, cr);
+    }
     if (r.state === 'pending' || r.state === 'reported') {
       const wa = el('a', 'linkbtn', 'WhatsApp'); wa.href = waLink(r); wa.target = '_blank'; wa.rel = 'noopener';
       const cp = el('button', 'linkbtn', 'Copy link'); cp.type = 'button'; cp.addEventListener('click', () => copy(checkoutLink(r.id)));

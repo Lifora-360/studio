@@ -1,4 +1,4 @@
-import { $, loadScript, toast } from './common.js';
+import { $, loadScript, toast, store, safePart, downloadBlob, shareBlob, canShareFiles, fontsReady } from './common.js';
 import { db, UPI, money, upiUri } from './pay-config.js';
 
 /* Public checkout: /pay/?id=<uuid>  (old links used ?pay=<uuid>; both work). */
@@ -84,11 +84,63 @@ function renderDue(r) {
   });
 }
 
+/* ---------- receipt printer (paid state) ---------- */
+// Zig-zag torn edge, same geometry as the React component: 40 teeth, 4px deep.
+const TEETH = 40, DEPTH = 4;
+const teeth = Array.from({ length: TEETH * 2 }, (_, i) => {
+  const x = 100 - ((i + 1) * 100) / (TEETH * 2);
+  return `${x}% ${i % 2 === 0 ? '100%' : `calc(100% - ${DEPTH}px)`}`;
+}).join(', ');
+const RECEIPT_CLIP = `polygon(0 0, 100% 0, 100% calc(100% - ${DEPTH}px), ${teeth})`;
+const LABELS = { processing: 'Confirming your payment', printing: 'Printing your receipt', complete: 'Payment received' };
+
+function setStage(stage) {
+  $('rp').dataset.stage = stage;
+  const l = $('rpLabel');
+  l.textContent = LABELS[stage];
+  l.classList.remove('swap'); void l.offsetWidth; l.classList.add('swap');
+  $('rpFeed').setAttribute('aria-hidden', String(stage !== 'complete'));
+  if (stage === 'complete') $('paid').classList.add('done');
+}
+
 function renderPaid(r) {
-  $('paidAmount').textContent = money(r.amount);
-  const when = r.paid_at ? new Date(r.paid_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
-  $('paidText').textContent = r.purpose + (when ? ', confirmed on ' + when : '') + '. Thank you.';
+  const amount = money(r.amount);
+  const paid = r.paid_at ? new Date(r.paid_at) : new Date();
+  $('rpScreenAmt').textContent = amount;
+  $('rpAmt').textContent = amount;
+  $('rpNo').textContent = 'LF-' + r.id.slice(0, 8).toUpperCase();
+  $('rpDate').textContent = paid.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  $('rpFrom').textContent = r.customer_name;
+  $('rpFor').textContent = r.purpose;
+  $('rpPaper').style.clipPath = RECEIPT_CLIP;
   show('paid');
+
+  // Print once per device; on later visits the receipt is simply there.
+  const seenKey = 'lifora.receipt.' + r.id;
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches || store.get(seenKey);
+  if (still) { setStage('complete'); }
+  else {
+    setStage('processing');
+    setTimeout(() => setStage('printing'), 900);
+    setTimeout(() => { setStage('complete'); store.set(seenKey, 1); }, 900 + 1800);
+  }
+
+  $('rpSave').addEventListener('click', async () => {
+    const btn = $('rpSave');
+    btn.classList.add('busy'); btn.disabled = true;
+    try {
+      await loadScript('../vendor/html2canvas.min.js');
+      await fontsReady();
+      const canvas = await window.html2canvas($('rpPaper'), { scale: 3, backgroundColor: '#ffffff', logging: false });
+      const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'));
+      const name = `Lifora_Receipt_${safePart(r.customer_name, 'Client')}_${r.id.slice(0, 8).toUpperCase()}.png`;
+      if (canShareFiles('image/png')) {
+        const out = await shareBlob(blob, name, 'Lifora payment receipt');
+        if (out === 'unsupported') downloadBlob(blob, name);
+      } else downloadBlob(blob, name);
+    } catch (e) { console.error(e); toast('Couldn’t save the receipt. Take a screenshot instead.'); }
+    finally { btn.classList.remove('busy'); btn.disabled = false; }
+  });
 }
 
 async function init() {

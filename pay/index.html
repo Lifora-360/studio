@@ -62,11 +62,57 @@
     <p class="co-muted">We’ll confirm once the payment shows in our account. This link will then say “Paid”.</p>
   </section>
 
-  <section id="paid" class="co-card co-state" hidden>
-    <div class="co-icon co-icon-ok" aria-hidden="true"></div>
-    <h1>Paid</h1>
-    <p class="co-amount co-amount-sm" id="paidAmount"></p>
-    <p class="co-muted" id="paidText"></p>
+  <section id="paid" class="rp-wrap" hidden>
+    <div class="rp" id="rp" data-stage="processing" aria-label="Payment receipt">
+      <div class="rp-machine">
+        <div class="rp-header">
+          <div class="rp-status">
+            <span class="rp-ind" aria-hidden="true">
+              <span class="rp-spin"></span>
+              <svg class="rp-check" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9"/><path d="M6 10.4l2.6 2.6L14 7.6"/></svg>
+            </span>
+            <span class="rp-label" id="rpLabel" role="status" aria-live="polite">Confirming your payment</span>
+          </div>
+          <span class="rp-led" aria-hidden="true"></span>
+        </div>
+        <div class="rp-screen">
+          <span>Lifora</span>
+          <b id="rpScreenAmt"></b>
+        </div>
+        <div class="rp-slot" aria-hidden="true"></div>
+      </div>
+      <div class="rp-output">
+        <div class="rp-shade" aria-hidden="true"></div>
+        <div class="rp-feed" id="rpFeed">
+          <article class="rp-paper" id="rpPaper">
+            <header class="rp-p-head">
+              <img src="../assets/img/emblem.webp" alt="" width="34" height="32">
+              <strong>Lifora</strong>
+              <span>A journey to a better life</span>
+            </header>
+            <p class="rp-p-title">Payment receipt</p>
+            <dl class="rp-p-rows">
+              <div><dt>Receipt no.</dt><dd id="rpNo"></dd></div>
+              <div><dt>Date</dt><dd id="rpDate"></dd></div>
+            </dl>
+            <hr>
+            <dl class="rp-p-rows">
+              <div><dt>Received from</dt><dd id="rpFrom"></dd></div>
+              <div><dt>For</dt><dd id="rpFor"></dd></div>
+              <div><dt>Paid by</dt><dd>UPI</dd></div>
+            </dl>
+            <hr>
+            <div class="rp-p-total"><span>Amount paid</span><b id="rpAmt"></b></div>
+            <hr>
+            <p class="rp-p-thanks">Thank you</p>
+            <p class="rp-p-note">Lifora has recorded this payment. This is not a tax invoice.</p>
+          </article>
+        </div>
+      </div>
+    </div>
+    <div class="rp-actions" id="rpActions">
+      <button class="btn btn-line" id="rpSave" type="button"><span class="spinner"></span>Save receipt</button>
+    </div>
   </section>
 
   <section id="missing" class="co-card co-state" hidden>
