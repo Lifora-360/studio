@@ -5,7 +5,7 @@ import { db, UPI, money, upiUri } from './pay-config.js';
 const params = new URLSearchParams(location.search);
 const id = params.get('id') || params.get('pay') || '';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const onPhone = matchMedia('(pointer:coarse)').matches;
+const onPhone = matchMedia('(pointer:coarse)').matches || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 let request = null;
 
 function show(section) {
@@ -41,19 +41,23 @@ function renderDue(r) {
   $('coPayee').textContent = UPI.name;
   $('coUpi').textContent = UPI.id;
   const uri = upiUri(r);
+  const query = uri.slice(uri.indexOf('?'));
   $('coPay').href = uri;
   $('coPay').textContent = 'Pay ' + amount + ' with a UPI app';
+  // App-specific links: iPhones often ignore the generic upi:// link, these open the app directly.
+  const APPS = { gpay: 'tez://upi/pay', phonepe: 'phonepe://pay', paytm: 'paytmmp://pay' };
+  if (/iPhone|iPad|iPod/.test(navigator.userAgent)) APPS.gpay = 'gpay://upi/pay';
+  document.querySelectorAll('.co-app').forEach((a) => { a.href = APPS[a.dataset.app] + query; });
   drawQr(uri).catch(() => { $('coQrWrap').hidden = true; });
 
   if (onPhone) {
-    // Same-phone QR is useless; keep it one tap away.
+    // The pay buttons come first; the QR (for paying from another phone) is one tap away.
     $('coQrWrap').hidden = true;
     $('coShowQr').hidden = false;
     $('coShowQr').addEventListener('click', () => { $('coQrWrap').hidden = false; $('coShowQr').hidden = true; });
   } else {
-    // On a computer the QR is the main way to pay.
-    $('coPay').hidden = true; $('coHint').hidden = true;
-    $('due').classList.add('desk');
+    // On a computer the buttons stay (a phone browser may still report a fine pointer), plus a hint to scan.
+    $('coDeskHint').hidden = false;
   }
 
   document.querySelectorAll('[data-copy]').forEach((b) => b.addEventListener('click', async () => {

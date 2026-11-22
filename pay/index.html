@@ -23,7 +23,13 @@
     <p class="co-purpose" id="coPurpose"></p>
 
     <a class="btn btn-primary co-pay" id="coPay" href="#">Pay with a UPI app</a>
-    <p class="co-hint" id="coHint">Opens Google Pay, PhonePe, Paytm or your bank’s app with the amount filled in.</p>
+    <p class="co-hint" id="coHint">Opens your UPI app with the amount filled in. Or choose your app:</p>
+    <div class="co-apps" id="coApps">
+      <a class="co-app" data-app="gpay" href="#">Google Pay</a>
+      <a class="co-app" data-app="phonepe" href="#">PhonePe</a>
+      <a class="co-app" data-app="paytm" href="#">Paytm</a>
+    </div>
+    <p class="co-hint co-desk-hint" id="coDeskHint" hidden>On a computer? Scan the QR code below with your phone.</p>
 
     <div class="co-qr" id="coQrWrap">
       <div id="coQr" class="qr" role="img" aria-label="UPI QR code"></div>
