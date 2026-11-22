@@ -1,4 +1,4 @@
-import { $, readSharedClient, toast } from './common.js';
+import { $, readSharedClient, toast, dynamicButton } from './common.js';
 import { db, money, checkoutLink, PRESETS } from './pay-config.js';
 
 let client, rows = [], filter = 'open';
@@ -7,8 +7,11 @@ let client, rows = [], filter = 'open';
 const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
 const fmtDate = (d) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 const statusOf = (r) => r.status === 'paid' ? 'paid' : (new Date(r.expires_at) < new Date() ? 'expired' : (r.reported_at ? 'reported' : 'pending'));
-async function copy(text) {
-  try { await navigator.clipboard.writeText(text); toast('Link copied'); } catch { prompt('Copy this link', text); }
+async function copy(text, btn) {
+  try {
+    await navigator.clipboard.writeText(text);
+    if (btn) dynamicButton(btn).flash('Copied', btn.classList.contains('linkbtn') ? '' : undefined, 1500); else toast('Link copied');
+  } catch { prompt('Copy this link', text); }
 }
 function waLink(r) {
   const link = checkoutLink(r.id);
@@ -54,20 +57,20 @@ $('newForm').addEventListener('submit', async (e) => {
   const err = $('newErr'); err.textContent = '';
   if (!name || !purpose) { err.textContent = 'Add the client’s name and what the payment is for.'; return; }
   if (!(amount >= 1 && amount <= 10000000)) { err.textContent = 'Enter an amount between ₹1 and ₹1,00,00,000.'; return; }
-  const btn = $('createBtn'); btn.classList.add('busy'); btn.disabled = true;
+  const btn = dynamicButton($('createBtn'), { full: true }); btn.busy('Creating link');
   const { data, error } = await client.rpc('create_payment_request', {
     p_customer_name: name, p_customer_phone: phone || null, purpose_text: purpose,
     p_amount: amount, p_expires_at: new Date(Date.now() + days * 86400000).toISOString()
   });
-  btn.classList.remove('busy'); btn.disabled = false;
-  if (error) { err.textContent = error.message; return; }
+  if (error) { btn.reset(); err.textContent = error.message; return; }
+  btn.flash('Link ready');
   const r = { id: data, customer_name: name, customer_phone: phone, purpose, amount };
   const res = $('result'); res.innerHTML = '';
   const link = checkoutLink(data);
   const a = el('a', null, link); a.href = link; a.target = '_blank'; a.rel = 'noopener';
   const row = el('div', 'row');
   const wa = el('a', 'btn btn-primary', 'Send on WhatsApp'); wa.href = waLink(r); wa.target = '_blank'; wa.rel = 'noopener'; wa.style.margin = '0';
-  const cp = el('button', 'btn btn-line', 'Copy link'); cp.type = 'button'; cp.addEventListener('click', () => copy(link));
+  const cp = el('button', 'btn btn-line', 'Copy link'); cp.type = 'button'; cp.addEventListener('click', () => copy(link, cp));
   row.append(wa, cp);
   res.append(el('strong', null, `Link ready for ${name}, ${money(amount)}`), a, row);
   res.hidden = false;
@@ -111,12 +114,12 @@ function render() {
     if (r.state === 'paid' && r.transaction_ref) acts.appendChild(el('span', 'req-sub', 'Ref ' + r.transaction_ref));
     if (r.state === 'paid') {
       const rc = el('a', 'linkbtn', 'Receipt'); rc.href = checkoutLink(r.id); rc.target = '_blank'; rc.rel = 'noopener';
-      const cr = el('button', 'linkbtn', 'Copy receipt link'); cr.type = 'button'; cr.addEventListener('click', () => copy(checkoutLink(r.id)));
+      const cr = el('button', 'linkbtn', 'Copy receipt link'); cr.type = 'button'; cr.addEventListener('click', () => copy(checkoutLink(r.id), cr));
       acts.append(rc, cr);
     }
     if (r.state === 'pending' || r.state === 'reported') {
       const wa = el('a', 'linkbtn', 'WhatsApp'); wa.href = waLink(r); wa.target = '_blank'; wa.rel = 'noopener';
-      const cp = el('button', 'linkbtn', 'Copy link'); cp.type = 'button'; cp.addEventListener('click', () => copy(checkoutLink(r.id)));
+      const cp = el('button', 'linkbtn', 'Copy link'); cp.type = 'button'; cp.addEventListener('click', () => copy(checkoutLink(r.id), cp));
       const pd = el('button', 'btn btn-primary', 'Mark paid'); pd.type = 'button'; pd.style.cssText = 'padding:6px 12px;font-size:13px;margin-left:auto';
       pd.addEventListener('click', () => markPaid(r));
       acts.append(wa, cp, pd);

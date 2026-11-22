@@ -124,3 +124,22 @@ a{color:inherit}
 }
 @media (max-width:420px){.brand span{display:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- dynamic button (see dynamicButton() in common.js) ---------- */
+.dyn{position:relative;overflow:hidden;white-space:nowrap;transition:width .26s cubic-bezier(.23,1,.32,1),background .15s cubic-bezier(.23,1,.32,1),border-color .15s,color .15s,transform .15s cubic-bezier(.23,1,.32,1)}
+.dyn:active:not(:disabled){transform:scale(.97)}
+.dyn:disabled{opacity:1;cursor:progress}
+.dyn-in{position:relative;display:inline-flex;align-items:center;gap:8px}
+.dyn-ico,.dyn-txt{position:relative;display:inline-grid;overflow:hidden}
+.dyn-ico{width:17px;height:17px;flex:none}
+.dyn-ico[hidden]{display:none!important}
+.dyn-item{grid-area:1/1;display:flex;align-items:center;justify-content:center}
+.dyn-ico .dyn-item svg{width:17px;height:17px}
+.dyn-enter{animation:dyn-enter .18s cubic-bezier(.23,1,.32,1)}
+.dyn-leave{animation:dyn-leave .18s cubic-bezier(.23,1,.32,1) forwards}
+@keyframes dyn-enter{from{opacity:0;transform:translateY(8px)}}
+@keyframes dyn-leave{to{opacity:0;transform:translateY(-8px)}}
+.dyn-measure{position:absolute;left:0;top:0;display:inline-flex;align-items:center;gap:8px;visibility:hidden;pointer-events:none}
+.dyn-ico-m{display:inline-flex;width:17px;height:17px}
+.dyn-spin{animation:spin .8s linear infinite}
+.linkbtn.dyn{padding:0}

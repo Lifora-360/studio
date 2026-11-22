@@ -1,5 +1,5 @@
 import { $, store, readSharedClient, writeSharedClient, clearSharedClient, fontsReady, frameScheduler,
-  safePart, today, prettyDate, downloadBlob, shareBlob, canShareFiles, toast, loadImage, ICON } from './common.js';
+  safePart, today, prettyDate, downloadBlob, shareBlob, canShareFiles, toast, loadImage, ICON, dynamicButton } from './common.js';
 
 /* ==========================================================================
    Square profile picture, patient first.
@@ -294,26 +294,28 @@ function toBlob() {
   draw();
   return new Promise((res, rej) => $('preview').toBlob((b) => (b ? res(b) : rej(new Error('PNG failed'))), 'image/png'));
 }
-async function withBusy(btn, fn) {
-  btn.classList.add('busy'); btn.disabled = true;
-  try { await fn(); } finally { btn.classList.remove('busy'); btn.disabled = false; }
-}
 async function onDownload() {
-  await withBusy($('downloadBtn'), async () => {
-    try {
-      const blob = await toBlob();
-      const url = downloadBlob(blob, filename());
-      $('status').textContent = 'Saved ' + filename();
-      toast('PNG downloaded.', { label: 'Open instead', run: () => window.open(url, '_blank') });
-    } catch { $('status').textContent = 'The PNG couldn’t be made. Try again or use another browser.'; }
-  });
+  const b = dynamicButton($('downloadBtn'));
+  b.busy('Making PNG');
+  try {
+    const blob = await toBlob();
+    const url = downloadBlob(blob, filename());
+    $('status').textContent = 'Saved ' + filename();
+    b.flash('Downloaded');
+    toast('PNG downloaded.', { label: 'Open instead', run: () => window.open(url, '_blank') });
+  } catch {
+    b.reset();
+    $('status').textContent = 'The PNG couldn’t be made. Try again or use another browser.';
+  }
 }
 async function onShare() {
-  await withBusy($('shareBtn'), async () => {
-    const blob = await toBlob();
-    const r = await shareBlob(blob, filename(), 'Client profile picture');
-    if (r === 'unsupported') { downloadBlob(blob, filename()); toast('Sharing isn’t available here, so the PNG was downloaded.'); }
-  });
+  const b = dynamicButton($('shareBtn'));
+  b.busy('Preparing');
+  const blob = await toBlob();
+  const r = await shareBlob(blob, filename(), 'Client profile picture');
+  if (r === 'shared') b.flash('Shared');
+  else if (r === 'unsupported') { downloadBlob(blob, filename()); b.flash('Downloaded'); toast('Sharing isn’t available here, so the PNG was downloaded.'); }
+  else b.reset();
 }
 
 /* ==========================================================================

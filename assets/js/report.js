@@ -1,5 +1,5 @@
 import { $, store, readSharedClient, writeSharedClient, clearSharedClient, fontsReady, frameScheduler,
-  safePart, prettyDate, today, downloadBlob, shareBlob, canShareFiles, toast, loadScript, ICON } from './common.js';
+  safePart, prettyDate, today, downloadBlob, shareBlob, canShareFiles, toast, loadScript, ICON, dynamicButton } from './common.js';
 
 /* ==========================================================================
    Test catalogue (unchanged from v2 so existing workflows carry over)
@@ -445,11 +445,9 @@ async function buildPdf(onProgress) {
   return pdf.output('blob');
 }
 
-async function withBusy(btn, fn) {
-  const btns = [$('pdfBtn'), $('shareBtn')];
-  btn.classList.add('busy'); btns.forEach((b) => { b.disabled = true; });
-  try { await fn(); } finally { btn.classList.remove('busy'); btns.forEach((b) => { b.disabled = false; }); }
-}
+function lockOther(btn, on) { [$('pdfBtn'), $('shareBtn')].forEach((b) => { if (b !== btn) b.disabled = on; }); }
+// Progress shows on the button itself: "Preparing" → "Page 1 of 2" → "Downloaded".
+const progressOn = (b) => (m) => { $('status').textContent = m; const pg = /page (\d+) of (\d+)/i.exec(m); if (pg && pg[2] !== '1') b.set(`Page ${pg[1]} of ${pg[2]}`, ICON.spin); };
 function failed(e) {
   console.error(e);
   const st = $('status');
@@ -459,25 +457,30 @@ function failed(e) {
 }
 async function onPdf() {
   if (!validate()) return;
-  await withBusy($('pdfBtn'), async () => {
-    try {
-      const blob = await buildPdf((m) => { $('status').textContent = m; });
-      const url = downloadBlob(blob, pdfName());
-      $('status').textContent = 'Saved ' + pdfName();
-      toast('PDF downloaded.', { label: 'Open instead', run: () => window.open(url, '_blank') });
-    } catch (e) { failed(e); }
-  });
+  const b = dynamicButton($('pdfBtn'));
+  b.busy('Preparing'); lockOther($('pdfBtn'), true);
+  try {
+    const blob = await buildPdf(progressOn(b));
+    const url = downloadBlob(blob, pdfName());
+    $('status').textContent = 'Saved ' + pdfName();
+    b.flash('Downloaded');
+    toast('PDF downloaded.', { label: 'Open instead', run: () => window.open(url, '_blank') });
+  } catch (e) { b.reset(); failed(e); }
+  finally { lockOther($('pdfBtn'), false); }
 }
 async function onShare() {
   if (!validate()) return;
-  await withBusy($('shareBtn'), async () => {
-    try {
-      const blob = await buildPdf((m) => { $('status').textContent = m; });
-      const r = await shareBlob(blob, pdfName(), 'Lifora test request');
-      if (r === 'unsupported') { downloadBlob(blob, pdfName()); toast('Sharing isn’t available here, so the PDF was downloaded.'); }
-      render();
-    } catch (e) { failed(e); }
-  });
+  const b = dynamicButton($('shareBtn'));
+  b.busy('Preparing'); lockOther($('shareBtn'), true);
+  try {
+    const blob = await buildPdf(progressOn(b));
+    const r = await shareBlob(blob, pdfName(), 'Lifora test request');
+    if (r === 'shared') b.flash('Shared');
+    else if (r === 'unsupported') { downloadBlob(blob, pdfName()); b.flash('Downloaded'); toast('Sharing isn’t available here, so the PDF was downloaded.'); }
+    else b.reset();
+    render();
+  } catch (e) { b.reset(); failed(e); }
+  finally { lockOther($('shareBtn'), false); }
 }
 
 /* ==========================================================================

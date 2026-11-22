@@ -1,4 +1,4 @@
-import { $, loadScript, toast, store, safePart, downloadBlob, shareBlob, canShareFiles, fontsReady } from './common.js';
+import { $, loadScript, toast, store, safePart, downloadBlob, shareBlob, canShareFiles, fontsReady, dynamicButton } from './common.js';
 import { db, UPI, money, upiUri } from './pay-config.js';
 
 /* Public checkout: /pay/?id=<uuid>  (old links used ?pay=<uuid>; both work). */
@@ -62,7 +62,7 @@ function renderDue(r) {
 
   document.querySelectorAll('[data-copy]').forEach((b) => b.addEventListener('click', async () => {
     const v = b.dataset.copy === 'upi' ? UPI.id : Number(r.amount).toFixed(Number(r.amount) % 1 ? 2 : 0);
-    try { await navigator.clipboard.writeText(v); toast('Copied'); } catch { toast('Couldn’t copy. Select the text instead.'); }
+    try { await navigator.clipboard.writeText(v); dynamicButton(b).flash('Copied', '', 1500); } catch { toast('Couldn’t copy. Select the text instead.'); }
   }));
 
   $('coRefForm').addEventListener('submit', async (e) => {
@@ -70,17 +70,21 @@ function renderDue(r) {
     const ref = $('coRef').value.replace(/\s/g, '').toUpperCase();
     const msg = $('coRefMsg');
     if (!/^[A-Z0-9]{6,40}$/.test(ref)) { msg.className = 'co-msg err'; msg.textContent = 'Enter the reference exactly as your UPI app shows it (letters and numbers only).'; return; }
-    msg.className = 'co-msg'; msg.textContent = 'Sending…';
+    msg.className = 'co-msg'; msg.textContent = '';
+    const send = dynamicButton($('coRefForm').querySelector('button'));
+    send.busy('Sending');
     const client = await db();
     const { error } = await client.rpc('submit_payment_reference', { p_payment_id: r.id, p_reference: ref });
     if (error) {
+      send.reset();
       msg.className = 'co-msg err';
       msg.textContent = /function|schema cache/i.test(error.message || '')
         ? 'Please send this reference to your Lifora care team on WhatsApp.'
         : error.message;
       return;
     }
-    show('reported');
+    send.flash('Sent');
+    setTimeout(() => show('reported'), 700);
   });
 }
 
@@ -126,20 +130,20 @@ function renderPaid(r) {
   }
 
   $('rpSave').addEventListener('click', async () => {
-    const btn = $('rpSave');
-    btn.classList.add('busy'); btn.disabled = true;
+    const b = dynamicButton($('rpSave'));
+    b.busy('Saving');
     try {
       await loadScript('../vendor/html2canvas.min.js');
       await fontsReady();
       const canvas = await window.html2canvas($('rpPaper'), { scale: 3, backgroundColor: '#ffffff', logging: false });
       const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'));
       const name = `Lifora_Receipt_${safePart(r.customer_name, 'Client')}_${r.id.slice(0, 8).toUpperCase()}.png`;
-      if (canShareFiles('image/png')) {
-        const out = await shareBlob(blob, name, 'Lifora payment receipt');
-        if (out === 'unsupported') downloadBlob(blob, name);
-      } else downloadBlob(blob, name);
-    } catch (e) { console.error(e); toast('Couldn’t save the receipt. Take a screenshot instead.'); }
-    finally { btn.classList.remove('busy'); btn.disabled = false; }
+      let out = 'unsupported';
+      if (canShareFiles('image/png')) out = await shareBlob(blob, name, 'Lifora payment receipt');
+      if (out === 'unsupported') { downloadBlob(blob, name); b.flash('Saved'); }
+      else if (out === 'shared') b.flash('Shared');
+      else b.reset();
+    } catch (e) { console.error(e); b.reset(); toast('Couldn’t save the receipt. Take a screenshot instead.'); }
   });
 }
 
