@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Client Profile Picture · Lifora</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#142d25">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="../assets/fonts/figtree-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/cormorant-garamond-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/css/base.css">
+<style>
+  .dp-wrap{width:min(100%,640px,calc(100dvh - 220px));aspect-ratio:1;position:relative}
+  #preview{display:block;width:100%;height:100%;border-radius:50%;box-shadow:0 30px 60px #0007,0 0 0 1px #ffffff14}
+  .dp-small{position:absolute;right:-6px;bottom:4px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:#a9b8ae}
+  .dp-small canvas{width:56px;height:56px;border-radius:50%;box-shadow:0 4px 14px #0006}
+  @media (max-width:980px){.dp-wrap{width:min(100%,520px)}.dp-small{display:none}}
+</style>
+</head>
+<body>
+<div class="studio">
+  <section class="form-col" aria-label="Client details">
+    <header class="form-head">
+      <a class="wordmark" href="../">lifora<small>METABOLIC WELLNESS</small></a>
+      <nav class="tool-switch" aria-label="Tools">
+        <a href="./" aria-current="page">Profile picture</a>
+        <a href="../report/">Test report</a>
+      </nav>
+    </header>
+
+    <div class="form-body">
+      <h1 class="form-title">Client profile picture</h1>
+      <p class="form-lede">A 1600 px circular card for the client’s care-team WhatsApp group. It updates as you type.</p>
+
+      <div class="group">
+        <h2>Client</h2>
+        <div class="fields">
+          <div class="f wide">
+            <label for="name">Full name <span class="count" data-count="name"></span></label>
+            <input id="name" maxlength="28" autocomplete="off" placeholder="e.g. Saravanan K">
+          </div>
+          <div class="f">
+            <label for="sex">Sex</label>
+            <select id="sex"><option value="">—</option><option>Male</option><option>Female</option><option>Other</option></select>
+          </div>
+          <div class="f">
+            <label for="age">Age</label>
+            <div class="unit"><input id="age" type="number" inputmode="numeric" min="1" max="120" placeholder="45"><span>yrs</span></div>
+          </div>
+          <div class="f">
+            <label for="height">Height</label>
+            <div class="unit"><input id="height" type="number" inputmode="decimal" min="50" max="250" placeholder="167"><span>cm</span></div>
+          </div>
+          <div class="f">
+            <label for="weight">Weight</label>
+            <div class="unit"><input id="weight" type="number" inputmode="decimal" step="0.1" min="20" max="300" placeholder="98"><span>kg</span></div>
+          </div>
+          <div class="f">
+            <span class="label">BMI</span>
+            <div class="derived" id="bmiOut" aria-live="polite">Add height and weight</div>
+          </div>
+          <div class="f">
+            <label for="diet">Diet</label>
+            <select id="diet"><option>Omnivore</option><option>Vegetarian</option><option>Eggetarian</option><option>Vegan</option><option>Other</option></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>Clinical snapshot <span class="hint">one item per line</span></h2>
+        <div class="fields">
+          <div class="f wide">
+            <label for="objectives">Primary objectives <span class="count" data-count="objectives"></span></label>
+            <textarea id="objectives" maxlength="180" placeholder="Weight reduction&#10;Better sleep&#10;More energy through the day"></textarea>
+            <div class="help">Up to 6 lines are shown. Anything that doesn’t fit becomes “+ N more”.</div>
+          </div>
+          <div class="f wide">
+            <label for="conditions">Existing conditions <span class="count" data-count="conditions"></span></label>
+            <textarea id="conditions" maxlength="180" placeholder="Hypertension&#10;Hyperuricemia"></textarea>
+            <div class="help">Only what the care team needs for day-to-day decisions.</div>
+          </div>
+          <div class="f wide">
+            <label for="ask">Client’s ask, in their words <span class="count" data-count="ask"></span></label>
+            <textarea id="ask" class="short" maxlength="90" placeholder="Lose 10 kg and stop feeling tired after lunch"></textarea>
+          </div>
+          <div class="f">
+            <label for="allergies">Allergies <span class="count" data-count="allergies"></span></label>
+            <textarea id="allergies" class="short" maxlength="55" placeholder="Nil"></textarea>
+          </div>
+          <div class="f">
+            <label for="intolerances">Intolerances <span class="count" data-count="intolerances"></span></label>
+            <textarea id="intolerances" class="short" maxlength="55" placeholder="Nil"></textarea>
+          </div>
+          <div class="f wide">
+            <label for="notAddressed">Not being addressed now <span class="count" data-count="notAddressed"></span></label>
+            <textarea id="notAddressed" class="short" maxlength="70" placeholder="Nil"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>Program <span class="hint">optional</span></h2>
+        <div class="fields">
+          <div class="f wide">
+            <label for="program">Program name <span class="count" data-count="program"></span></label>
+            <input id="program" maxlength="30" list="programList" placeholder="Core metabolic wellness">
+            <datalist id="programList">
+              <option>30-day metabolic reset</option><option>90-day metabolic wellness</option>
+              <option>GLP-1 supported program</option><option>Longevity program</option><option>Women’s metabolic program</option>
+            </datalist>
+          </div>
+          <div class="f">
+            <label for="clientId">Client ID <span class="count" data-count="clientId"></span></label>
+            <input id="clientId" maxlength="20" placeholder="LW-26001" autocomplete="off">
+          </div>
+          <div class="f">
+            <label for="week">Current week <span class="count" data-count="week"></span></label>
+            <input id="week" maxlength="14" placeholder="Week 1">
+          </div>
+          <div class="f wide">
+            <label for="doctor">Primary doctor <span class="count" data-count="doctor"></span></label>
+            <input id="doctor" maxlength="30" list="doctorList" placeholder="Dr Prakash" autocomplete="off">
+            <datalist id="doctorList"></datalist>
+          </div>
+        </div>
+      </div>
+
+      <p class="privacy">Nothing you type is uploaded. The picture is drawn in this browser and a draft is kept on this device only, so you can come back to it. Leave out phone numbers, addresses and anything the group doesn’t need.</p>
+      <p style="margin-top:18px"><button class="btn btn-quiet" id="resetBtn" type="button">Start a new client</button></p>
+    </div>
+  </section>
+
+  <section class="desk" aria-label="Preview">
+    <div class="desk-top">
+      <div class="chips" id="themeChips" role="radiogroup" aria-label="Colour style"></div>
+      <span class="meta" id="themeNote"></span>
+    </div>
+    <div class="desk-stage">
+      <div class="dp-wrap">
+        <canvas id="preview" width="1600" height="1600" role="img" aria-label="Profile picture preview"></canvas>
+        <div class="dp-small" aria-hidden="true"><canvas id="thumb" width="112" height="112"></canvas>chat size</div>
+      </div>
+    </div>
+    <div class="desk-foot">
+      <div class="status" id="status" aria-live="polite"></div>
+      <div class="acts">
+        <button class="btn btn-ghost" id="shareBtn" type="button" hidden><span class="spinner"></span><span data-icon="share"></span>Share</button>
+        <button class="btn btn-brass" id="downloadBtn" type="button"><span class="spinner"></span><span data-icon="download"></span>Download PNG</button>
+      </div>
+    </div>
+  </section>
+</div>
+<script type="module" src="../assets/js/profile.js"></script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Investigation Report · Lifora</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#142d25">
+<link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="../assets/img/signature-page.webp" as="image">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/report.css">
+</head>
+<body>
+<div class="studio">
+  <section class="form-col" aria-label="Report details">
+    <header class="form-head">
+      <a class="wordmark" href="../">lifora<small>METABOLIC WELLNESS</small></a>
+      <nav class="tool-switch" aria-label="Tools">
+        <a href="../profile/">Profile picture</a>
+        <a href="./" aria-current="page">Test report</a>
+      </nav>
+    </header>
+
+    <div class="form-body">
+      <h1 class="form-title">Investigation report</h1>
+      <p class="form-lede">Pick the tests this client needs. They’re grouped into clinical profiles on an A4 PDF, and long lists continue onto extra pages.</p>
+
+      <div class="group">
+        <h2>Client</h2>
+        <div class="fields">
+          <div class="f wide" id="nameField">
+            <label for="name">Full name</label>
+            <input id="name" autocomplete="off" maxlength="40" placeholder="e.g. Nivetha R">
+            <div class="error">Add the client’s name. It’s printed on every page.</div>
+          </div>
+          <div class="f">
+            <label for="age">Age</label>
+            <div class="unit"><input id="age" type="number" inputmode="numeric" min="0" max="120" placeholder="36"><span>yrs</span></div>
+          </div>
+          <div class="f">
+            <label for="doctor">Recommended by</label>
+            <input id="doctor" list="doctorList" maxlength="30" placeholder="Optional" autocomplete="off">
+            <datalist id="doctorList"></datalist>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>Investigations <span class="hint" id="selCount">None selected</span></h2>
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input id="testSearch" type="search" placeholder="Find a test, e.g. ferritin" aria-label="Find a test">
+        </div>
+        <div class="search-count" id="searchCount" aria-live="polite"></div>
+        <div id="packages"></div>
+
+        <div class="custom">
+          <label for="customTest" class="custom-label">Something not listed?</label>
+          <div class="custom-row">
+            <input id="customTest" placeholder="e.g. Ultrasound abdomen" maxlength="60">
+            <button class="btn btn-quiet" id="addCustom" type="button">Add</button>
+          </div>
+          <div class="custom-list" id="customList"></div>
+        </div>
+        <p style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-quiet" id="clearAll" type="button">Clear selection</button>
+          <button class="btn btn-quiet" id="resetBtn" type="button">Start a new client</button>
+        </p>
+      </div>
+
+      <p class="privacy">GLP-1/GIP tests are split into baseline and conditional; the treating clinician confirms the conditional ones. Everything stays in this browser. The PDF is made on this device and nothing is uploaded.</p>
+    </div>
+  </section>
+
+  <section class="desk" aria-label="Preview">
+    <div class="desk-top">
+      <div class="chips" id="themeChips" role="radiogroup" aria-label="Report design"></div>
+      <span class="meta" id="pageMeta">1 page</span>
+    </div>
+    <div class="desk-stage" id="stage">
+      <div class="scaler" id="scaler"><div class="pages" id="pagesRoot"></div></div>
+    </div>
+    <div class="desk-foot">
+      <div class="status" id="status" aria-live="polite"></div>
+      <div class="acts">
+        <button class="btn btn-ghost" id="printBtn" type="button">Print</button>
+        <button class="btn btn-ghost" id="shareBtn" type="button" hidden><span class="spinner"></span><span data-icon="share"></span>Share</button>
+        <button class="btn btn-brass" id="pdfBtn" type="button"><span class="spinner"></span><span data-icon="download"></span>Download PDF</button>
+      </div>
+    </div>
+  </section>
+</div>
+<script type="module" src="../assets/js/report.js"></script>
+</body>
+</html>
