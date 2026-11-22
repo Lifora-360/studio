@@ -1,5 +1,7 @@
 import { $, store, readSharedClient, writeSharedClient, clearSharedClient, fontsReady, frameScheduler,
   safePart, today, prettyDate, downloadBlob, shareBlob, canShareFiles, toast, loadImage, ICON, dynamicButton } from './common.js';
+import { counter } from './counter.js';
+let bmiCounter = null;
 
 /* ==========================================================================
    Square profile picture, patient first.
@@ -56,11 +58,11 @@ function bmi() {
   return { value: v.toFixed(1), band };
 }
 function updateBmi() {
-  const b = bmi(), out = $('bmiOut');
-  out.textContent = '';
-  if (!b) { out.textContent = 'From height and weight'; return; }
-  const strong = document.createElement('b'); strong.textContent = b.value;
-  out.append(strong, document.createTextNode(' ' + b.band));
+  const b = bmi();
+  if (!bmiCounter) bmiCounter = counter($('bmiVal'), { decimals: 1 });
+  $('bmiVal').hidden = !b;
+  if (b) bmiCounter.set(Number(b.value));
+  $('bmiBand').textContent = b ? b.band : 'From height and weight';
 }
 
 function saveDraft() {

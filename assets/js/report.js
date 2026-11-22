@@ -1,5 +1,7 @@
 import { $, store, readSharedClient, writeSharedClient, clearSharedClient, fontsReady, frameScheduler,
   safePart, prettyDate, today, downloadBlob, shareBlob, canShareFiles, toast, loadScript, ICON, dynamicButton } from './common.js';
+import { counter } from './counter.js';
+let selCounter = null;
 
 /* ==========================================================================
    Test catalogue (unchanged from v2 so existing workflows carry over)
@@ -136,7 +138,10 @@ function updateBadges(chosen) {
     document.querySelector(`[data-pkg-badge="${pi}"]`).textContent = n ? String(n) : '';
   });
   const total = chosen.length + state.custom.length;
-  $('selCount').textContent = total ? `${total} selected` : 'None selected';
+  if (!selCounter) selCounter = counter($('selNum'));
+  $('selNum').hidden = !total;
+  if (total) selCounter.set(total);
+  $('selWord').textContent = total ? ' selected' : 'None selected';
   document.querySelectorAll('.region').forEach((r) => r.classList.toggle('show', chosen.includes(r.dataset.regionFor)));
 }
 

@@ -1,5 +1,6 @@
 import { $, loadScript, toast, store, safePart, downloadBlob, shareBlob, canShareFiles, fontsReady, dynamicButton } from './common.js';
 import { db, UPI, money, upiUri } from './pay-config.js';
+import { rupeeCounter } from './counter.js';
 
 /* Public checkout: /pay/?id=<uuid>  (old links used ?pay=<uuid>; both work). */
 const params = new URLSearchParams(location.search);
@@ -110,7 +111,7 @@ function setStage(stage) {
 function renderPaid(r) {
   const amount = money(r.amount);
   const paid = r.paid_at ? new Date(r.paid_at) : new Date();
-  $('rpScreenAmt').textContent = amount;
+  const screen = rupeeCounter($('rpScreenAmt'));
   $('rpAmt').textContent = amount;
   $('rpNo').textContent = 'LF-' + r.id.slice(0, 8).toUpperCase();
   $('rpDate').textContent = paid.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -122,8 +123,11 @@ function renderPaid(r) {
   // Print once per device; on later visits the receipt is simply there.
   const seenKey = 'lifora.receipt.' + r.id;
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches || store.get(seenKey);
-  if (still) { setStage('complete'); }
+  if (still) { screen.set(r.amount); setStage('complete'); }
   else {
+    // The screen counts up from ₹0 while the printer confirms.
+    screen.set(0);
+    requestAnimationFrame(() => screen.set(r.amount));
     setStage('processing');
     setTimeout(() => setStage('printing'), 900);
     setTimeout(() => { setStage('complete'); store.set(seenKey, 1); }, 900 + 1800);

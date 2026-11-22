@@ -1,5 +1,7 @@
 import { $, readSharedClient, toast, dynamicButton } from './common.js';
 import { db, money, checkoutLink, PRESETS } from './pay-config.js';
+import { counter, rupeeCounter } from './counter.js';
+let stats = null;
 
 let client, rows = [], filter = 'open';
 
@@ -85,10 +87,11 @@ async function load() {
   rows = (data || []).map((r) => ({ ...r, state: statusOf(r) }));
   const month = new Date(); month.setDate(1); month.setHours(0, 0, 0, 0);
   const open = rows.filter((r) => r.state === 'pending' || r.state === 'reported');
-  $('sPending').textContent = money(open.reduce((s, r) => s + Number(r.amount), 0));
+  if (!stats) stats = { pending: rupeeCounter($('sPending')), reported: counter($('sReported')), month: rupeeCounter($('sMonth')) };
+  stats.pending.set(open.reduce((s, r) => s + Number(r.amount), 0));
   $('sPendingLabel').textContent = `Waiting, ${open.length} link${open.length === 1 ? '' : 's'}`;
-  $('sReported').textContent = String(rows.filter((r) => r.state === 'reported').length);
-  $('sMonth').textContent = money(rows.filter((r) => r.state === 'paid' && r.paid_at && new Date(r.paid_at) >= month).reduce((s, r) => s + Number(r.amount), 0));
+  stats.reported.set(rows.filter((r) => r.state === 'reported').length);
+  stats.month.set(rows.filter((r) => r.state === 'paid' && r.paid_at && new Date(r.paid_at) >= month).reduce((s, r) => s + Number(r.amount), 0));
   render();
 }
 function render() {
