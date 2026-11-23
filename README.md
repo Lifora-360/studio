@@ -6,6 +6,7 @@ Browser tools the Lifora care team uses to make client material.
 | --- | --- | --- |
 | Client profile picture | `/profile/` | 1600 × 1600 PNG for the client's WhatsApp care-team group |
 | Investigation report | `/report/` | Branded A4 PDF listing the tests the client should get done |
+| Prescription | `/prescription/` | A4 prescription on Lifora letterhead: doctor, patient, diagnosis, medicines, advice, review date |
 | Payments (admin) | `/payments/` | Sign-in register: create UPI payment links, send on WhatsApp, mark paid |
 | Checkout (customers) | `/pay/?id=…` | Public page a client opens to pay by UPI app or QR |
 
@@ -27,6 +28,12 @@ client's own words. No program, doctor, phone number or client ID on the card.
 
 **Test report**: A4 PDF with the client's name, age and sex, tests grouped into profiles with a tick
 small leaf beside each, and short preparation notes on the last page. Long selections continue onto more pages.
+
+## Prescription
+
+Doctors and one-tap medicine presets live in `assets/js/rx-config.js`. Staff can also save a doctor and a
+signature image on their own device (browser storage only, never uploaded). The page warns when the content
+is too long for one A4 sheet.
 
 ## Payments
 

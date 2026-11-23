@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Prescription · Lifora</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="../assets/img/favicon.png" type="image/png">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/rx.css">
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="../"><img src="../assets/img/emblem.webp" alt="" width="30" height="28"><span>Lifora</span></a>
+  <nav class="tabs" aria-label="Tools">
+    <a href="../profile/">Profile picture</a>
+    <a href="../report/">Test report</a>
+    <a href="./" aria-current="page">Prescription</a>
+    <a href="../payments/">Payments</a>
+  </nav>
+</header>
+
+<main class="studio">
+  <section class="form-col" aria-label="Prescription details">
+    <h1 class="form-title">Prescription</h1>
+    <p class="form-lede">Fill in the patient and medicines. The A4 prescription updates as you type.</p>
+
+    <div class="group">
+      <h2>Doctor</h2>
+      <div class="fields">
+        <div class="f wide">
+          <label for="docPick">Prescribing doctor</label>
+          <select id="docPick"></select>
+        </div>
+        <div class="f wide"><label for="docName">Name</label><input id="docName" maxlength="40" placeholder="Dr. Full Name" autocomplete="off"></div>
+        <div class="f"><label for="docQual">Qualification</label><input id="docQual" maxlength="40" placeholder="MBBS" autocomplete="off"></div>
+        <div class="f"><label for="docReg">Registration no.</label><input id="docReg" maxlength="30" placeholder="TNMC-000000" autocomplete="off"></div>
+        <div class="f wide">
+          <span class="label">Signature <span class="count">optional, stays on this device</span></span>
+          <div class="sig-row">
+            <label class="btn btn-line sig-btn" for="sigFile">Add signature image</label>
+            <input id="sigFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+            <button class="linkbtn" id="sigClear" type="button" hidden>Remove</button>
+            <img id="sigThumb" alt="" hidden>
+          </div>
+          <div class="help">Leave empty to sign and stamp the printed copy by hand.</div>
+        </div>
+      </div>
+      <button class="linkbtn" id="docSave" type="button" style="margin-top:12px">Save this doctor on this device</button>
+    </div>
+
+    <div class="group">
+      <h2>Patient</h2>
+      <div class="fields">
+        <div class="f wide" id="nameField">
+          <label for="pName">Patient name</label>
+          <input id="pName" maxlength="40" autocomplete="off" placeholder="e.g. Gowri Sankar Naidu">
+          <div class="error">Add the patient’s name.</div>
+        </div>
+        <div class="f"><label for="pAge">Age</label><div class="unit"><input id="pAge" type="number" inputmode="numeric" min="0" max="120"><span>yrs</span></div></div>
+        <div class="f"><label for="pSex">Sex</label><select id="pSex"><option value="">Select</option><option value="M">Male</option><option value="F">Female</option><option value="Other">Other</option></select></div>
+        <div class="f"><label for="pWeight">Weight</label><div class="unit"><input id="pWeight" type="number" inputmode="decimal" step="0.1" min="1" max="350"><span>kg</span></div></div>
+        <div class="f"><label for="rxDate">Date</label><input id="rxDate" type="date"></div>
+        <div class="f wide"><label for="pAddress">Address <span class="count">city is enough</span></label><input id="pAddress" maxlength="60" autocomplete="off"></div>
+        <div class="f wide"><label for="diagnosis">Diagnosis</label><textarea id="diagnosis" class="short" maxlength="200" placeholder="e.g. Vitamin D deficiency, Vitamin B12 deficiency"></textarea></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Medicines <span class="hint" id="rxCount"></span></h2>
+      <div class="presets" id="rxPresets"></div>
+      <ol class="rx-rows" id="rxRows"></ol>
+      <button class="btn btn-line" id="addRow" type="button">Add a medicine</button>
+      <datalist id="medList"></datalist>
+    </div>
+
+    <div class="group">
+      <h2>Advice and review</h2>
+      <div class="fields">
+        <div class="f wide"><label for="advice">Advice &amp; investigations <span class="count">one per line</span></label><textarea id="advice" maxlength="600" placeholder="e.g. Both injections can be taken together&#10;Continue the other supplements"></textarea></div>
+        <div class="f"><label for="review">Next review on</label><input id="review" type="date"></div>
+        <div class="f"><span class="label">&nbsp;</span><div class="review-quick"><button class="linkbtn" data-review="14" type="button">2 weeks</button><button class="linkbtn" data-review="30" type="button">1 month</button><button class="linkbtn" data-review="90" type="button">3 months</button></div></div>
+      </div>
+    </div>
+
+    <p class="privacy">Nothing is uploaded. The prescription is made in this browser; a draft and any signature image stay on this device only. Check every medicine, dose and duration before you sign.</p>
+    <button class="linkbtn" id="resetBtn" type="button">Start a new prescription</button>
+  </section>
+
+  <section class="preview" aria-label="Preview">
+    <div class="stage" id="stage">
+      <div class="scaler" id="scaler"><div class="pages" id="pagesRoot"></div></div>
+    </div>
+    <div class="preview-foot">
+      <div class="status" id="status" aria-live="polite">A4 PDF</div>
+      <div class="acts">
+        <button class="btn btn-line" id="shareBtn" type="button" hidden><span data-icon="share"></span>Share</button>
+        <button class="btn btn-primary" id="pdfBtn" type="button"><span data-icon="download"></span>Download PDF</button>
+      </div>
+    </div>
+  </section>
+</main>
+<script type="module" src="../assets/js/prescription.js"></script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+/* ==========================================================================
+   Prescription tool — form pieces + the A4 page (1024 × 1448, true A4 ratio).
+   Layout follows Lifora's printed prescription: logo left, doctor right,
+   patient block, Rx table, advice, review date, signature bottom right.
+   ========================================================================== */
+
+/* ---------- form ---------- */
+.presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.preset{border:1px solid var(--line-2);background:var(--paper);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--teal);cursor:pointer}
+.preset:hover{border-color:var(--teal)}
+.preset::before{content:'+ '}
+.rx-rows{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:12px;counter-reset:rx}
+.rx-row{position:relative;border:1px solid var(--line);border-radius:12px;padding:14px 14px 12px 40px;background:var(--paper)}
+.rx-row::before{counter-increment:rx;content:counter(rx);position:absolute;left:14px;top:14px;font:600 15px var(--serif);color:var(--teal)}
+.rx-row .fields{gap:10px}
+.rx-row label{font-size:12px}
+.rx-row input,.rx-row select{padding:8px 10px;font-size:14px}
+.rx-row-acts{display:flex;justify-content:flex-end;gap:16px;margin-top:8px}
+.rx-row-acts .linkbtn{font-size:12.5px}
+.sig-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.sig-btn{cursor:pointer;padding:8px 14px;font-size:13px}
+#sigThumb{max-height:40px;max-width:140px;border:1px solid var(--line);border-radius:6px;background:#fff;padding:2px}
+.review-quick{display:flex;gap:14px;align-items:center;min-height:44px}
+.review-quick .linkbtn{font-size:13px}
+
+/* ---------- preview ---------- */
+.scaler{flex:none;position:relative}
+.pages{width:1024px;transform-origin:top left}
+.page{position:relative;width:1024px;height:1448px;background:#fff;overflow:hidden;box-shadow:0 1px 2px #0e3b3814,0 18px 40px #0e3b3816;font-family:var(--sans);color:#1a2b29;-webkit-font-smoothing:antialiased}
+.exporting .pages{transform:none!important}
+.exporting .page{box-shadow:none}
+
+/* ---------- the page ---------- */
+.rx-page{padding:64px 84px 0}
+.rx-head{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:30px;border-bottom:1.5px solid #e4e9e7}
+.rx-mark{display:flex;flex-direction:column;align-items:center;width:240px}
+.rx-mark img{width:184px;height:auto;display:block}
+.rx-mark .tag{display:flex;align-items:center;gap:10px;margin-top:8px;font:italic 400 17px var(--serif);color:#0e3b38;white-space:nowrap}
+.rx-mark .tag::before,.rx-mark .tag::after{content:'';width:26px;height:1px;background:#b8892e}
+.rx-doc{text-align:right;padding-top:6px}
+.rx-doc b{display:block;font-size:23px;font-weight:700;color:#1a2b29}
+.rx-doc span{display:block;font-size:16.5px;color:#6a7b78;margin-top:6px}
+.rx-pt{display:grid;grid-template-columns:1fr auto;gap:12px 40px;margin-top:32px;font-size:17.5px}
+.rx-pt p{margin:0}
+.rx-pt .r{text-align:right}
+.rx-pt b{font-weight:700}
+.rx-dx{margin:28px 0 0;font-size:17.5px;line-height:1.5}
+.rx-dx b{font-weight:700}
+.rx-symbol{font:italic 600 60px/1 var(--serif);color:#0e3b38;margin:40px 0 8px}
+.rx-table{width:100%;border-collapse:collapse;font-size:17.5px}
+.rx-table th{text-align:left;font-size:15px;font-weight:600;color:#6a7b78;padding:0 12px 12px 0;border-bottom:2px solid #c9d2cf}
+.rx-table td{padding:20px 12px 20px 0;border-bottom:1px solid #e4e9e7;vertical-align:top;line-height:1.45}
+.rx-table td:first-child{font-weight:700;width:42%}
+.rx-table td:nth-child(2){width:16%}
+.rx-table td:nth-child(3){width:12%}
+.rx-table .empty td{color:#9aa8a5;font-weight:400}
+.rx-advice{margin-top:44px;font-size:17.5px}
+.rx-advice h3{font-size:17.5px;font-weight:700;margin:0 0 10px}
+.rx-advice ol{margin:0;padding-left:22px;line-height:1.75}
+.rx-review{margin-top:22px;font-size:17.5px}
+.rx-review b{font-weight:700}
+.rx-sign{position:absolute;right:84px;bottom:84px;width:280px;text-align:center}
+.rx-sign .sig{height:76px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:6px}
+.rx-sign .sig img{max-height:76px;max-width:220px}
+.rx-sign .line{border-top:1.5px solid #6a7b78;padding-top:10px;font-size:17.5px;font-weight:700}
+.rx-sign small{display:block;font-size:14px;color:#6a7b78;margin-top:4px;letter-spacing:.02em}
+
+@media print{
+  @page{size:A4;margin:0}
+  body{padding:0}
+  .bar,.form-col,.preview-foot,.toast{display:none!important}
+  .studio{display:block}
+  .preview{position:static;height:auto;background:none;border:0;display:block}
+  .stage{padding:0;overflow:visible;display:block}
+  .scaler{width:auto!important;height:auto!important}
+  .pages{width:auto;transform:none!important}
+  .page{box-shadow:none;margin:0 auto;zoom:.775;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+}

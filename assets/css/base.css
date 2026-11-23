@@ -111,7 +111,8 @@ a{color:inherit}
 /* ---------- responsive ---------- */
 @media (max-width:980px){
   .bar{padding:0 16px}
-  .tabs{gap:18px}
+  .tabs{gap:18px;overflow-x:auto;scrollbar-width:none;min-width:0;flex:1;justify-content:flex-start;margin-left:12px}
+  .tabs a{white-space:nowrap}
   .studio{grid-template-columns:minmax(0,1fr)}
   .preview{position:relative;top:0;height:auto;order:-1;border-left:0;border-bottom:1px solid var(--line);display:block}
   .stage{padding:20px 16px}
