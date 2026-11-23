@@ -26,10 +26,16 @@ const sigKey = () => SIG_PREFIX + (val('docReg') || val('docName')).toLowerCase(
 function fillDoctorPick() {
   const pick = $('docPick');
   pick.innerHTML = '';
+  pick.appendChild(new Option('New doctor (type below)', 'new'));
   doctors().forEach((d, i) => pick.appendChild(new Option(`${d.name}${d.reg ? ', ' + d.reg : ''}`, String(i))));
-  pick.appendChild(new Option('Someone else (type below)', 'other'));
-  const i = doctors().findIndex((d) => d.name === val('docName'));
-  pick.value = i >= 0 ? String(i) : (val('docName') ? 'other' : '0');
+  syncDoctorPick();
+}
+// The list follows what's typed: it shows a saved doctor only while the fields match them exactly.
+function syncDoctorPick() {
+  const i = doctors().findIndex((d) => d.name === val('docName') && (d.reg || '') === val('docReg') && (d.qual || '') === val('docQual'));
+  $('docPick').value = i >= 0 ? String(i) : 'new';
+  const onDevice = store.get(DOCS_KEY, []).some((d) => d.name === val('docName'));
+  $('docForget').hidden = !onDevice;
 }
 function useDoctor(d) {
   $('docName').value = d.name || ''; $('docQual').value = d.qual || ''; $('docReg').value = d.reg || '';
@@ -206,8 +212,7 @@ function loadDraft() {
     FIELDS.forEach((id) => { if (d[id] != null) $(id).value = d[id]; });
     rows = Array.isArray(d.rows) && d.rows.length ? d.rows.slice(0, MAX_ROWS).map((r) => ({ ...blankRow(), ...r })) : [blankRow()];
   } else {
-    rows = [blankRow()];
-    if (DOCTORS[0]) { $('docName').value = DOCTORS[0].name; $('docQual').value = DOCTORS[0].qual; $('docReg').value = DOCTORS[0].reg; }
+    rows = [blankRow()];   // doctor starts empty: whoever is prescribing fills in their own details
   }
   const c = readSharedClient();
   if (!val('pName') && c.name) $('pName').value = c.name;
@@ -230,7 +235,8 @@ function resetAll() {
    ========================================================================== */
 function validate() {
   if (!val('pName')) { $('nameField').classList.add('invalid'); $('pName').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('pName').focus({ preventScroll: true }); return false; }
-  if (!val('docName')) { toast('Add the prescribing doctor’s name.'); $('docName').focus(); return false; }
+  if (!val('docName')) { $('docNameField').classList.add('invalid'); $('docName').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('docName').focus({ preventScroll: true }); return false; }
+  if (!val('docReg')) { $('docRegField').classList.add('invalid'); $('docReg').scrollIntoView({ behavior: 'smooth', block: 'center' }); $('docReg').focus({ preventScroll: true }); return false; }
   if (!rows.some((r) => r.medicine.trim())) { toast('Add at least one medicine.'); return false; }
   return true;
 }
@@ -298,13 +304,21 @@ function init() {
 
   $('docPick').addEventListener('change', () => {
     const v = $('docPick').value;
-    if (v === 'other') { useDoctor({}); $('docName').focus(); } else useDoctor(doctors()[Number(v)]);
+    if (v === 'new') { useDoctor({}); $('docName').focus(); } else useDoctor(doctors()[Number(v)]);
+    syncDoctorPick();
+  });
+  $('docClear').addEventListener('click', () => { useDoctor({}); syncDoctorPick(); $('docName').focus(); });
+  $('docForget').addEventListener('click', () => {
+    store.set(DOCS_KEY, store.get(DOCS_KEY, []).filter((d) => d.name !== val('docName')));
+    fillDoctorPick();
+    toast('Removed from this device. The details stay on this prescription.');
   });
   $('docSave').addEventListener('click', () => {
     if (!val('docName')) { toast('Type the doctor’s name first.'); return; }
     const saved = store.get(DOCS_KEY, []).filter((d) => d.name !== val('docName'));
     saved.push({ name: val('docName'), qual: val('docQual'), reg: val('docReg') });
     store.set(DOCS_KEY, saved);
+    if (!val('docReg')) toast('Saved. Add the registration number too before printing.');
     fillDoctorPick();
     dynamicButton($('docSave')).flash('Saved', '', 1500);
   });
@@ -323,7 +337,9 @@ function init() {
   }));
   document.querySelector('.form-col').addEventListener('input', (e) => {
     if (FIELDS.includes(e.target.id)) changed();
-    if (['docName', 'docReg'].includes(e.target.id)) showSig();
+    if (['docName', 'docReg', 'docQual'].includes(e.target.id)) { showSig(); syncDoctorPick(); }
+    if (e.target.id === 'docName' && val('docName')) $('docNameField').classList.remove('invalid');
+    if (e.target.id === 'docReg' && val('docReg')) $('docRegField').classList.remove('invalid');
     if (e.target.id === 'pName' && val('pName')) $('nameField').classList.remove('invalid');
   });
   document.querySelector('.form-col').addEventListener('change', (e) => { if (FIELDS.includes(e.target.id)) changed(); });
