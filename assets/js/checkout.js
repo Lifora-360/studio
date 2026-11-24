@@ -1,5 +1,5 @@
 import { $, loadScript, toast, store, safePart, downloadBlob, shareBlob, canShareFiles, fontsReady, dynamicButton } from './common.js';
-import { db, UPI, money, upiUri } from './pay-config.js';
+import { rpc, UPI, money, upiUri } from './pay-config.js';
 import { rupeeCounter } from './counter.js';
 
 /* Public checkout: /pay/?id=<uuid>  (old links used ?pay=<uuid>; both work). */
@@ -13,18 +13,19 @@ function show(section) {
   ['loading', 'due', 'reported', 'paid', 'missing'].forEach((s) => { $(s).hidden = s !== section; });
 }
 
-async function fetchRequest(client) {
-  // Prefer the v2 function; fall back to the original one if the migration hasn't been run.
-  let { data, error } = await client.rpc('get_checkout', { p_payment_id: id });
+async function fetchRequest() {
+  // The request was usually started by the inline script in <head>, before this file even loaded.
+  const early = window.__lfCheckout && window.__lfCheckout.id === id ? window.__lfCheckout.promise : null;
+  let { data, error } = early ? await early : await rpc('get_checkout', { p_payment_id: id });
   if (error && /get_checkout|function|schema cache/i.test(error.message || '')) {
-    ({ data, error } = await client.rpc('get_payment_request', { p_payment_id: id }));
+    ({ data, error } = await rpc('get_payment_request', { p_payment_id: id }));
   }
   if (error) throw error;
   return Array.isArray(data) ? data[0] : data;
 }
 
 async function drawQr(text) {
-  await loadScript('../vendor/qrcode-generator-1.4.4.js');
+  await loadScript('../vendor/qrcode-generator-1.4.4.min.js');
   const qr = window.qrcode(0, 'M');
   qr.addData(text);
   qr.make();
@@ -74,8 +75,7 @@ function renderDue(r) {
     msg.className = 'co-msg'; msg.textContent = '';
     const send = dynamicButton($('coRefForm').querySelector('button'));
     send.busy('Sending');
-    const client = await db();
-    const { error } = await client.rpc('submit_payment_reference', { p_payment_id: r.id, p_reference: ref });
+    const { error } = await rpc('submit_payment_reference', { p_payment_id: r.id, p_reference: ref });
     if (error) {
       send.reset();
       msg.className = 'co-msg err';
@@ -154,8 +154,7 @@ function renderPaid(r) {
 async function init() {
   if (!UUID.test(id)) { show('missing'); return; }
   try {
-    const client = await db();
-    request = await fetchRequest(client);
+    request = await fetchRequest();
   } catch (e) { console.error(e); show('missing'); return; }
   if (!request || request.status === 'expired') { show('missing'); return; }
   if (request.status === 'paid') { renderPaid(request); return; }

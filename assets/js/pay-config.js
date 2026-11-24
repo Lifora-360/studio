@@ -15,6 +15,21 @@ export const PRESETS = [
   { label: '3-month program', purpose: 'Lifora program, 3 months', amount: 25000 }
 ];
 
+/* Plain HTTPS call to a database function, for the public checkout page.
+   Sends the same headers supabase-js does, without loading the 137 KB library. */
+export async function rpc(name, args) {
+  try {
+    const res = await fetch(`${SUPABASE.url}/rest/v1/rpc/${name}`, {
+      method: 'POST',
+      headers: { apikey: SUPABASE.anonKey, Authorization: `Bearer ${SUPABASE.anonKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(args)
+    });
+    const text = await res.text();
+    const body = text ? JSON.parse(text) : null;
+    return res.ok ? { data: body, error: null } : { data: null, error: { message: (body && body.message) || res.statusText, code: body && body.code } };
+  } catch (e) { return { data: null, error: { message: e.message || 'Network error' } }; }
+}
+
 let client = null;
 export async function db() {
   if (client) return client;

@@ -280,7 +280,7 @@ const BUILD = { schedule: scheduleDoc, bill: billDoc };
 async function drawQrs(root) {
   const boxes = root.querySelectorAll('[data-qr]');
   if (!boxes.length) return;
-  await loadScript('../vendor/qrcode-generator-1.4.4.js');
+  await loadScript('../vendor/qrcode-generator-1.4.4.min.js');
   boxes.forEach((b) => { const q = window.qrcode(0, 'M'); q.addData(b.dataset.qr); q.make(); b.innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true }); });
 }
 

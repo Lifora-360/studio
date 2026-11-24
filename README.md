@@ -104,7 +104,7 @@ pay/, payments/         checkout and admin pages
 assets/js/checkout.js   public checkout
 assets/js/payments.js   admin register
 supabase/               database schema and migrations
-vendor/                 html2canvas 1.4.1, jsPDF 2.5.1, supabase-js 2.58.0, qrcode-generator 1.4.4 (MIT)
+vendor/                 html2canvas 1.4.1, jsPDF 2.5.1, supabase-js 2.58.0, qrcode-generator 1.4.4, minified (MIT)
 ```
 
 Editing the test catalogue: `PACKAGES` (what appears in the sidebar) and `OUTPUT` (how tests are grouped
