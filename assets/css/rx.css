@@ -1,7 +1,7 @@
 /* ==========================================================================
    Prescription tool — form pieces + the A4 page (1024 × 1448, true A4 ratio).
    Layout follows Lifora's printed prescription: logo left, doctor right,
-   patient block, Rx table, advice, review date, signature bottom right.
+   client block, Rx table, advice, review date, signature bottom right.
    ========================================================================== */
 
 /* ---------- form ---------- */

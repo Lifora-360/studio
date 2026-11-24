@@ -6,7 +6,7 @@ Browser tools the Lifora care team uses to make client material.
 | --- | --- | --- |
 | Client profile picture | `/profile/` | 1600 × 1600 PNG for the client's WhatsApp care-team group |
 | Investigation report | `/report/` | Branded A4 PDF listing the tests the client should get done |
-| Prescription | `/prescription/` | A4 prescription on Lifora letterhead: doctor, patient, diagnosis, medicines, advice, review date |
+| Prescription | `/prescription/` | A4 prescription on Lifora letterhead: doctor, client, diagnosis, medicines, advice, review date |
 | Supplements | `/supplements/` | Three A4 PDFs from one form: client schedule, client bill (with payment link and QR), internal cost sheet. Needs sign-in |
 | Payments (admin) | `/payments/` | Sign-in register: create UPI payment links, send on WhatsApp, mark paid |
 | Checkout (customers) | `/pay/?id=…` | Public page a client opens to pay by UPI app or QR |
@@ -17,7 +17,7 @@ generated on the device, and drafts are kept in that browser's `localStorage` on
 
 ## Design
 
-Minimal and patient-first. The lotus emblem and wordmark (extracted from the master logo onto a
+Minimal and client-first. The lotus emblem and wordmark (extracted from the master logo onto a
 transparent background) appear small; the client's information is the largest thing on every output.
 
 - Colours: teal `#0e3b38` (from the logo), gold `#b8892e` used sparingly, white, allergy red `#b4462f`.
@@ -43,7 +43,7 @@ The catalogue (30s and 60s price lists, cost price and client price) lives only 
 shipped in the site code. Edit them in the Supabase table editor.
 
 - Bottles = daily doses × days ÷ tablets per bottle, rounded up (editable per row).
-- The schedule has no prices, the bill has client prices only, and cost prices appear only on the internal PDF.
+- The schedule has no prices, the bill has client prices only, and the internal PDF has cost prices only.
 - "Create payment link" on the bill uses the Payments register; the link and QR are printed on the bill.
 
 ## Payments

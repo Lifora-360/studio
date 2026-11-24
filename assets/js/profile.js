@@ -4,7 +4,7 @@ import { counter } from './counter.js';
 let bmiCounter = null;
 
 /* ==========================================================================
-   Square profile picture, patient first.
+   Square profile picture, client first.
    Order on the card: who (name + vitals) → existing conditions → allergies /
    intolerances → goals and the client's own words. Brand is a small sign-off.
    ========================================================================== */

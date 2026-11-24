@@ -7,7 +7,7 @@ import { DOCTORS } from './rx-config.js';
    Supplements: one form → three PDFs
      schedule  — what to take and when (no prices)          → client
      bill      — client prices and total, payment link/QR   → client
-     internal  — cost ("O") prices, client prices, margin   → Lifora only
+     internal  — cost ("O") prices and total cost            → Lifora only
    Cost prices come from Supabase (supplement_catalogue), readable only by
    signed-in payment admins, and are never drawn on the schedule or bill.
    ========================================================================== */
@@ -236,7 +236,7 @@ function scheduleDoc() {
   p.appendChild(table);
   const instr = val('instructions').split('\n').map((s) => s.trim().replace(/^\d+[.)]\s*/, '')).filter(Boolean);
   if (instr.length) {
-    const box = el('div', 'doc-instr'); box.appendChild(el('h3', null, 'Patient instructions'));
+    const box = el('div', 'doc-instr'); box.appendChild(el('h3', null, 'Client instructions'));
     const ol = el('ol'); instr.forEach((s) => ol.appendChild(el('li', null, s))); box.appendChild(ol); p.appendChild(box);
   }
   const sign = el('div', 'rx-sign'); const sigBox = el('div', 'sig');
@@ -292,27 +292,24 @@ function internalDoc() {
   const pt = el('div', 'doc-pt'); pt.append(line('Client', val('cName')), line('Prescribed by', val('docName'), true)); p.appendChild(pt);
   const table = el('table', 'doc-table');
   const hr = el('tr');
-  [['Item', ''], ['Qty', 'num'], ['Cost / btl', 'num'], ['Cost', 'num'], ['Client / btl', 'num'], ['Client', 'num'], ['Margin', 'num']].forEach(([h, c]) => hr.appendChild(el('th', c, h)));
+  [['#', ''], ['Item', ''], ['Qty', 'num'], ['Cost / bottle', 'num'], ['Cost', 'num']].forEach(([h, c]) => hr.appendChild(el('th', c, h)));
   const thead = el('thead'); thead.appendChild(hr);
   const tb = el('tbody');
   const list = billed();
-  if (!list.length) { const tr = el('tr', 'doc-empty'); const c = td('No billed items yet'); c.colSpan = 7; tr.appendChild(c); tb.appendChild(tr); }
-  list.forEach((r) => {
-    const b = bottles(r), co = costPrice(r), cp = clientPrice(r), m = b * (cp - co);
+  if (!list.length) { const tr = el('tr', 'doc-empty'); const c = td('No billed items yet'); c.colSpan = 5; tr.appendChild(c); tb.appendChild(tr); }
+  list.forEach((r, i) => {
+    const b = bottles(r), co = costPrice(r);
     const tr = el('tr'); const name = td(r.name.trim(), 'name');
     name.appendChild(el('small', null, [packLabel(r), r.custom ? 'added by hand' : (r.pack === '60s' ? '60s list' : '30s list')].filter(Boolean).join(' · ')));
-    tr.append(name, td(String(b), 'num'), td(money(co), 'num'), td(money(b * co), 'num'), td(money(cp), 'num'), td(money(b * cp), 'num'), td(money(m), 'num' + (m < 0 ? ' neg' : '')));
+    tr.append(td(String(i + 1)), name, td(String(b), 'num'), td(money(co), 'num'), td(money(b * co), 'num'));
     tb.appendChild(tr);
   });
-  const ct = total(costPrice), cl = total(clientPrice), mg = cl - ct;
   const tf = el('tfoot'); const g = el('tr', 'grand');
-  g.append(td('Total'), td(String(list.reduce((s, r) => s + bottles(r), 0)), 'num'), td(''), td(money(ct), 'num'), td(''), td(money(cl), 'num'), td(money(mg), 'num' + (mg < 0 ? ' neg' : '')));
+  const lab = td('Total cost'); lab.colSpan = 2;
+  g.append(lab, td(String(list.reduce((s, r) => s + bottles(r), 0)), 'num'), td(''), td(money(total(costPrice)), 'num'));
   tf.appendChild(g);
-  const pc = el('tr'); const pl = td(cl ? `Margin ${((mg / cl) * 100).toFixed(1)}% of the client total` : ''); pl.colSpan = 7; pl.style.fontWeight = '500'; pl.style.color = '#6a7b78'; pc.appendChild(pl); tf.appendChild(pc);
   table.append(thead, tb, tf);
   p.appendChild(table);
-  const below = list.filter((r) => clientPrice(r) < costPrice(r)).map((r) => r.name.trim());
-  if (below.length) p.appendChild(el('p', 'doc-note neg', `Client price is below cost for: ${below.join(', ')}.`));
   const locals = rows.filter((r) => r.name.trim() && r.local).map((r) => r.name.trim());
   if (locals.length) p.appendChild(el('p', 'doc-note', `Not billed (local pharmacy): ${locals.join(', ')}.`));
   page.appendChild(p);
@@ -349,7 +346,7 @@ function render() {
   st.textContent = !fits ? 'Too many rows for one page. Split this into two lists.'
     : docView === 'schedule' ? `${rows.filter((r) => r.name.trim()).length} on the schedule, ${days} days`
     : docView === 'bill' ? `${n} billed, total ${money(total(clientPrice))}`
-    : `Cost ${money(total(costPrice))}, client ${money(total(clientPrice))}`;
+    : `${n} billed, total cost ${money(total(costPrice))}`;
   $('payBtn').hidden = docView !== 'bill';
   fit();
 }

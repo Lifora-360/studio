@@ -131,7 +131,7 @@ function buildPage() {
   const pt = el('div', 'rx-pt');
   const line = (k, v, right) => { const n = el('p', right ? 'r' : null); n.append(el('b', null, k + ': '), document.createTextNode(v)); return n; };
   const ageSex = [val('pAge'), $('pSex').value].filter(Boolean).join(' | ');
-  pt.append(line('Patient Name', val('pName')), line('Date', ddmmyyyy(val('rxDate')), true),
+  pt.append(line('Client Name', val('pName')), line('Date', ddmmyyyy(val('rxDate')), true),
     line('Age / Sex', ageSex), line('Weight', val('pWeight') ? val('pWeight') + ' kg' : '', true));
   if (val('pAddress')) pt.append(line('Address', val('pAddress')));
 
@@ -240,7 +240,7 @@ function validate() {
   if (!rows.some((r) => r.medicine.trim())) { toast('Add at least one medicine.'); return false; }
   return true;
 }
-const pdfName = () => `Lifora_Prescription_${safePart(val('pName'), 'Patient')}_${val('rxDate') || 'undated'}.pdf`;
+const pdfName = () => `Lifora_Prescription_${safePart(val('pName'), 'Client')}_${val('rxDate') || 'undated'}.pdf`;
 async function buildPdf() {
   await Promise.all([loadScript('../vendor/html2canvas.min.js'), loadScript('../vendor/jspdf.umd.min.js')]);
   await fontsReady();
