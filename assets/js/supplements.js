@@ -2,7 +2,6 @@ import { $, store, readSharedClient, writeSharedClient, fontsReady, frameSchedul
   downloadBlob, toast, loadScript, ICON, dynamicButton } from './common.js';
 import { db, money, checkoutLink } from './pay-config.js';
 import { DOCTORS } from './rx-config.js';
-import { orderSnapshot } from './costsheet.js';
 
 /* ==========================================================================
    Supplements: one form → two PDFs for the client
@@ -47,7 +46,6 @@ function autoBottles(r) {
 }
 function bottles(r) { return r.local ? 0 : (r.manual ? int(r.bottles) : autoBottles(r)); }
 function clientPrice(r) { const c = catFor(r); return c ? Number(c.client_price) : Number(r.price || 0); }
-function costPrice(r) { const c = catFor(r); return c ? Number(c.cost_price) : Number(r.cost || 0); }
 function packLabel(r) {
   const c = catFor(r);
   if (!c) return '';
@@ -153,12 +151,7 @@ function renderRows() {
         const pi = el('input'); pi.type = 'number'; pi.inputMode = 'decimal'; pi.min = '0'; pi.value = r.price || ''; pi.setAttribute('aria-label', 'Client price per bottle');
         pi.addEventListener('input', () => { r.price = Number(pi.value) || 0; refreshRow(li, r); changed(); });
         pBox.appendChild(pi);
-        const cBox = el('div');
-        cBox.appendChild(el('label', null, 'Cost price per bottle'));
-        const ci = el('input'); ci.type = 'number'; ci.inputMode = 'decimal'; ci.min = '0'; ci.value = r.cost || ''; ci.setAttribute('aria-label', 'Cost price per bottle');
-        ci.addEventListener('input', () => { r.cost = Number(ci.value) || 0; refreshRow(li, r); changed(); });
-        cBox.appendChild(ci);
-        grid.append(pBox, cBox);
+        grid.append(pBox);
       }
     }
     li.appendChild(grid);
@@ -184,12 +177,10 @@ function refreshRow(li, r) {
   if (bi && !r.manual) bi.value = String(autoBottles(r));
   const line = li.querySelector('.money-line');
   if (!line) return;
-  const b = bottles(r), cp = clientPrice(r), co = costPrice(r);
+  const b = bottles(r), cp = clientPrice(r);
   line.innerHTML = '';
-  const left = el('span'); left.append(document.createTextNode(`${b} × ${money(cp)}${packLabel(r) ? ' · ' + packLabel(r) : ''} = `), el('b', null, money(b * cp)));
-  const right = el('span'); const m = b * (cp - co);
-  right.append(document.createTextNode('Margin '), el('b', m < 0 ? 'neg' : null, money(m)));
-  line.append(left, right);
+  const left = el('span'); left.append(document.createTextNode(`${b} × ${money(cp)}${packLabel(r) ? ' · ' + packLabel(r) : ''}`));
+  line.append(left, el('b', null, money(b * cp)));
 }
 function refreshAllRows() { document.querySelectorAll('#rows .sup-row').forEach((li, i) => refreshRow(li, rows[i])); }
 
@@ -314,7 +305,7 @@ function render() {
   st.textContent = !fits ? 'Too many rows for one page. Split this into two lists.'
     : docView === 'schedule' ? `${rows.filter((r) => r.name.trim()).length} on the schedule, ${days} days`
     : docView === 'bill' ? `${n} billed, total ${money(total(clientPrice))}`
-    : `${n} billed, total cost ${money(total(costPrice))}`;
+    : '';
   $('payBtn').hidden = docView !== 'bill';
   fit();
 }
@@ -330,7 +321,7 @@ function fit() {
 /* ==========================================================================
    Draft
    ========================================================================== */
-const FIELDS = ['cName', 'cAge', 'cSex', 'cDate', 'cPhone', 'docName', 'docQual', 'docReg', 'instructions'];
+const FIELDS = ['cName', 'cAge', 'cSex', 'cDate', 'cPhone', 'cAddress', 'docName', 'docQual', 'docReg', 'instructions'];
 function saveDraft() {
   const d = { rows, days, billNo, pay, docView };
   FIELDS.forEach((id) => { d[id] = $(id).value; });
@@ -369,7 +360,7 @@ function setDays(n) {
   refreshAllRows(); changed();
 }
 function resetAll() {
-  ['cName', 'cAge', 'cSex', 'cPhone'].forEach((id) => { $(id).value = ''; });
+  ['cName', 'cAge', 'cSex', 'cPhone', 'cAddress'].forEach((id) => { $(id).value = ''; });
   $('cDate').value = iso(new Date());
   rows = []; pay = null; billNo = newBillNo();
   renderRows(); renderCatalogue(); setDays(30);
@@ -427,17 +418,14 @@ async function createPayLink() {
    Private cost sheet: saved, never downloaded here
    ========================================================================== */
 async function saveCostSheet() {
-  const items = billed().map((r) => ({
-    name: r.name.trim(), pack: r.custom ? 'custom' : r.pack, label: packLabel(r),
-    qty: bottles(r), cost: costPrice(r), client: clientPrice(r)
-  }));
+  // Cost prices are filled in by the database; this page never receives them.
+  const items = billed().map((r) => ({ name: r.name.trim(), pack: r.custom ? 'custom' : r.pack, label: packLabel(r), qty: bottles(r), client: clientPrice(r) }));
   if (!items.length) return true;
-  const row = orderSnapshot({
-    billNo, date: val('cDate'), clientName: val('cName'), clientPhone: val('cPhone'), doctorName: val('docName'), days,
-    items, localItems: rows.filter((r) => r.name.trim() && r.local).map((r) => r.name.trim()),
-    paymentRequestId: pay && pay.amount === total(clientPrice) ? pay.id : null
-  });
-  const { error } = await client.from('supplement_orders').upsert(row, { onConflict: 'bill_no' });
+  const { error } = await client.rpc('save_supplement_order', { p: {
+    bill_no: billNo, bill_date: val('cDate'), client_name: val('cName'), client_phone: val('cPhone'), client_address: val('cAddress'),
+    doctor_name: val('docName'), days, items, local_items: rows.filter((r) => r.name.trim() && r.local).map((r) => r.name.trim()),
+    payment_request_id: pay && pay.amount === total(clientPrice) ? pay.id : null
+  } });
   if (error) { console.error(error); toast('The bill is fine, but the cost sheet couldn’t be saved: ' + error.message); return false; }
   return true;
 }
@@ -493,11 +481,11 @@ async function onAll() {
    Sign-in + init
    ========================================================================== */
 async function loadCatalogue() {
-  const { data, error } = await client.from('supplement_catalogue').select('*').eq('active', true).order('sort').order('name');
+  const { data, error } = await client.rpc('get_supplement_catalogue');   // client prices only
   if (error) throw error;
   catalogue = new Map();
   (data || []).forEach((r) => { if (!catalogue.has(r.name)) catalogue.set(r.name, {}); catalogue.get(r.name)[r.pack] = r; });
-  if (!catalogue.size) throw new Error('Your account can’t see the supplement list. Ask an admin to add you as a payments admin.');
+  if (!catalogue.size) throw new Error('This account isn’t set up for Lifora Studio yet. Ask the admin to add you as staff.');
 }
 async function openApp() {
   try { await loadCatalogue(); }

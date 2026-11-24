@@ -156,6 +156,8 @@ function markPaid(r) {
 
 function openApp() {
   $('app').hidden = false;
+  // Only the admin sees the way to the cost sheets.
+  client.rpc('studio_role').then(({ data }) => { $('costLink').hidden = data !== 'admin'; });
   const c = readSharedClient();
   if (c.name && !$('cName').value) $('cName').value = c.name;
   load();

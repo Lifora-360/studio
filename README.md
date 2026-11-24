@@ -8,7 +8,7 @@ Browser tools the Lifora care team uses to make client material.
 | Investigation report | `/report/` | Branded A4 PDF listing the tests the client should get done |
 | Prescription | `/prescription/` | A4 prescription on Lifora letterhead: doctor, client, diagnosis, medicines, advice, review date |
 | Supplements | `/supplements/` | Two A4 PDFs for the client: supplement schedule, and bill with payment link and QR. Needs sign-in |
-| Cost sheets | `/cost-sheets/` | Private: the internal cost sheet of every supplement bill, saved automatically. Linked only from Payments |
+| Cost sheets | `/cost-sheets/` | Admin only: every supplement order's cost sheet for the supplier (Aegant), editable, with commission and delivery fee |
 | Payments (admin) | `/payments/` | Sign-in register: create UPI payment links, send on WhatsApp, mark paid |
 | Checkout (customers) | `/pay/?id=…` | Public page a client opens to pay by UPI app or QR |
 
@@ -36,6 +36,14 @@ small leaf beside each, and short preparation notes on the last page. Long selec
 Doctors and one-tap medicine presets live in `assets/js/rx-config.js`. Staff can also save a doctor and a
 signature image on their own device (browser storage only, never uploaded). The page warns when the content
 is too long for one A4 sheet.
+
+## Sign-in and roles
+
+- **Admin** (`payment_admins`): everything, including cost prices and `/cost-sheets/`.
+- **Staff** (`studio_staff`, by email): Supplements, payment links and the payment register. Staff never
+  receive cost prices: the catalogue comes from `get_supplement_catalogue()` without them, and orders are
+  saved through `save_supplement_order()`, which looks the costs up in the database.
+- To add staff: create the user in Supabase → Authentication, then add their email to `studio_staff`.
 
 ## Supplements
 

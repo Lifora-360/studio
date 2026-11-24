@@ -1,60 +1,67 @@
 import { money } from './pay-config.js';
 
-/* Internal cost sheet, built from a saved supplement order (table supplement_orders).
-   Only the private Cost sheets page draws this; the Supplements page never offers it
-   for download, so it can't be sent to a client by mistake. */
+/* Cost sheet for the supply chain (Aegant), built from a saved supplement order
+   (table supplement_orders). Only the admin's Cost sheets page draws this; staff
+   can't open or download it, so it can't reach a client by mistake.
+
+   Totals:  items at cost  −  Lifora commission (commission_pct of that total)  +  delivery fee  =  net payable */
+
+export const SUPPLIER = 'Aegant';
 
 const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
 const td = (text, cls) => el('td', cls, text);
 const ddmmyyyy = (v) => { if (!v) return ''; const [y, m, d] = String(v).slice(0, 10).split('-'); return `${d}/${m}/${y}`; };
-function line(k, v, right) { const n = el('p', right ? 'r' : null); n.append(el('b', null, k + ': '), document.createTextNode(v || '')); return n; }
+const round2 = (n) => Math.round(Number(n || 0) * 100) / 100;
 
-/** Turn the live form state into the row saved to supplement_orders. */
-export function orderSnapshot({ billNo, date, clientName, clientPhone, doctorName, days, items, localItems, paymentRequestId }) {
-  const cost = items.reduce((s, i) => s + i.qty * i.cost, 0);
-  const client = items.reduce((s, i) => s + i.qty * i.client, 0);
-  return {
-    bill_no: billNo, bill_date: date || null, client_name: clientName, client_phone: clientPhone || null,
-    doctor_name: doctorName || null, days, items, local_items: localItems,
-    cost_total: cost, client_total: client, payment_request_id: paymentRequestId || null,
-    updated_at: new Date().toISOString()
-  };
+export function sheetTotals(o) {
+  const items = o.items || [];
+  const total = round2(items.reduce((s, i) => s + Number(i.qty || 0) * Number(i.cost || 0), 0));
+  const pct = Number(o.commission_pct ?? 30);
+  const commission = round2(total * pct / 100);
+  const delivery = round2(o.delivery_fee || 0);
+  return { total, pct, commission, delivery, net: round2(total - commission + delivery) };
 }
 
 export function costSheetPage(o) {
   const page = el('div', 'page doc'); const p = el('div', 'rx-page');
-  const head = el('div', 'rx-head');
-  const mark = el('div', 'rx-mark');
-  const logo = el('img'); logo.src = '../assets/img/lockup.webp'; logo.alt = 'Lifora';
-  mark.append(logo, el('div', 'tag', 'A Journey To A Better Life'));
+
+  const head = el('div', 'rx-head cs-head');
+  head.appendChild(el('div', 'cs-supplier', SUPPLIER));
   const right = el('div', 'rx-doc');
-  right.append(el('div', 'internal-tag', 'INTERNAL · NOT FOR CLIENTS'), el('span', null, 'Bill no. ' + o.bill_no), el('span', null, 'Date: ' + ddmmyyyy(o.bill_date)));
-  head.append(mark, right);
+  right.append(el('div', 'internal-tag', 'NOT FOR CLIENTS'), el('span', null, 'Bill no. ' + o.bill_no), el('span', null, 'Date: ' + ddmmyyyy(o.bill_date)));
+  head.appendChild(right);
   p.appendChild(head);
-  const t = el('div', 'doc-title'); t.append(el('h2', null, 'Internal cost sheet'), el('span', null, o.days ? `${o.days} days` : '')); p.appendChild(t);
-  const pt = el('div', 'doc-pt'); pt.append(line('Client', o.client_name), line('Prescribed by', o.doctor_name, true)); p.appendChild(pt);
+
+  const t = el('div', 'doc-title'); t.append(el('h2', null, 'Cost sheet'), el('span', null, o.days ? `${o.days} days` : '')); p.appendChild(t);
+
+  const ship = el('div', 'cs-ship');
+  const row = (k, v) => { const d = el('div'); d.append(el('span', null, k), el('b', null, v || '—')); return d; };
+  ship.append(row('Deliver to', o.client_name), row('Mobile', o.client_phone), row('Address', o.client_address));
+  p.appendChild(ship);
 
   const table = el('table', 'doc-table');
   const hr = el('tr');
-  [['#', ''], ['Item', ''], ['Qty', 'num'], ['Cost / bottle', 'num'], ['Cost', 'num']].forEach(([h, c]) => hr.appendChild(el('th', c, h)));
+  [['#', ''], ['Item', ''], ['Qty', 'num'], ['Cost / bottle', 'num'], ['Amount', 'num']].forEach(([h, c]) => hr.appendChild(el('th', c, h)));
   const thead = el('thead'); thead.appendChild(hr);
   const tb = el('tbody');
   const items = o.items || [];
-  if (!items.length) { const tr = el('tr', 'doc-empty'); const c = td('No billed items'); c.colSpan = 5; tr.appendChild(c); tb.appendChild(tr); }
+  if (!items.length) { const tr = el('tr', 'doc-empty'); const c = td('No items'); c.colSpan = 5; tr.appendChild(c); tb.appendChild(tr); }
   items.forEach((it, i) => {
     const tr = el('tr'); const name = td(it.name, 'name');
-    const sub = [it.label, it.pack === 'custom' ? 'added by hand' : (it.pack ? it.pack + ' list' : '')].filter(Boolean).join(' · ');
-    if (sub) name.appendChild(el('small', null, sub));
-    tr.append(td(String(i + 1)), name, td(String(it.qty), 'num'), td(money(it.cost), 'num'), td(money(it.qty * it.cost), 'num'));
+    if (it.label) name.appendChild(el('small', null, it.label));
+    tr.append(td(String(i + 1)), name, td(String(it.qty), 'num'), td(money(it.cost), 'num'), td(money(Number(it.qty) * Number(it.cost)), 'num'));
     tb.appendChild(tr);
   });
-  const tf = el('tfoot'); const g = el('tr', 'grand');
-  const lab = td('Total cost'); lab.colSpan = 2;
-  g.append(lab, td(String(items.reduce((s, i) => s + i.qty, 0)), 'num'), td(''), td(money(o.cost_total), 'num'));
-  tf.appendChild(g);
+  const s = sheetTotals(o);
+  const tf = el('tfoot');
+  const sumRow = (label, value, cls) => { const r = el('tr', cls); const l = td(label); l.colSpan = 4; r.append(l, td(value, 'num')); tf.appendChild(r); };
+  sumRow('Total', money(s.total), 'cs-sub');
+  sumRow(`Less Lifora commission (${s.pct}%)`, '− ' + money(s.commission), 'cs-sub');
+  sumRow('Delivery fee', '+ ' + money(s.delivery), 'cs-sub');
+  sumRow('Net payable', money(s.net), 'grand');
   table.append(thead, tb, tf);
   p.appendChild(table);
-  if ((o.local_items || []).length) p.appendChild(el('p', 'doc-note', `Not billed (local pharmacy): ${o.local_items.join(', ')}.`));
+  if ((o.local_items || []).length) p.appendChild(el('p', 'doc-note', `Not in this order (client buys locally): ${o.local_items.join(', ')}.`));
   page.appendChild(p);
   return page;
 }

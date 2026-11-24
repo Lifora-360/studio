@@ -12,8 +12,8 @@
 <link rel="stylesheet" href="../assets/css/rx.css">
 <link rel="stylesheet" href="../assets/css/sup.css">
 <style>
-  .sheets{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
-  .sheet{display:grid;grid-template-columns:1fr auto;gap:4px 16px;padding:14px 4px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:8px}
+  .sheets{list-style:none;margin:0;padding:0;border-top:1px solid var(--line);max-height:260px;overflow:auto}
+  .sheet{display:grid;grid-template-columns:1fr auto;gap:4px 16px;padding:12px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:8px}
   .sheet:hover{background:var(--mist)}
   .sheet[aria-selected="true"]{background:#e7efe6}
   .sheet b{font-size:15px}
@@ -22,6 +22,7 @@
   .sheet .amt small{display:block;font-weight:500;color:var(--muted);font-size:12px}
   .sheets .empty{color:var(--muted);padding:20px 4px;cursor:default}
   .owner-note{font-size:12.5px;color:var(--alert);background:#fbe9e5;border-radius:10px;padding:10px 12px;margin:14px 0 0}
+  .no-access{margin-top:24px}
 </style>
 </head>
 <body>
@@ -30,10 +31,10 @@
   <nav class="tabs" aria-label="Tools"><a href="../payments/">Back to Payments</a></nav>
 </header>
 <main class="studio">
-  <section class="form-col" aria-label="Saved cost sheets">
+  <section class="form-col" aria-label="Cost sheets">
     <h1 class="form-title">Cost sheets</h1>
-    <p class="form-lede">Saved automatically each time a supplement bill is downloaded or its payment link is made.</p>
-    <p class="owner-note">Internal only. These show what Lifora pays; never send them to a client.</p>
+    <p class="form-lede">One for every supplement bill, saved automatically. Edit it, then send it to the supply chain.</p>
+    <p class="owner-note">Admin only. Never send these to a client.</p>
 
     <form id="signin" class="fields" style="grid-template-columns:1fr;margin-top:24px" hidden novalidate>
       <div class="f"><label for="email">Email</label><input id="email" type="email" autocomplete="username" required></div>
@@ -42,12 +43,43 @@
       <p class="f"><span class="error" id="signinErr" style="display:block"></span></p>
     </form>
 
+    <p class="no-access form-lede" id="noAccess" hidden>Only the admin can open cost sheets. <a href="../payments/">Go to Payments</a></p>
+
     <div id="app" hidden>
-      <div class="search" style="margin-top:22px">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input id="q" type="search" placeholder="Search client or bill no." aria-label="Search" autocomplete="off">
+      <div class="group">
+        <h2>Saved <span class="hint" id="count"></span></h2>
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input id="q" type="search" placeholder="Search client or bill no." aria-label="Search" autocomplete="off">
+        </div>
+        <ul class="sheets" id="list" role="listbox" aria-label="Cost sheets"><li class="empty">Loading…</li></ul>
       </div>
-      <ul class="sheets" id="list" role="listbox" aria-label="Cost sheets"><li class="empty">Loading…</li></ul>
+
+      <form id="editor" hidden novalidate>
+        <div class="group">
+          <h2>Delivery <span class="dirty" id="dirty" hidden>Unsaved changes</span></h2>
+          <div class="fields">
+            <div class="f wide"><label for="eName">Client name</label><input id="eName" maxlength="100" autocomplete="off"></div>
+            <div class="f"><label for="ePhone">Mobile number</label><input id="ePhone" inputmode="tel" maxlength="20" autocomplete="off"></div>
+            <div class="f"><label for="eDate">Date</label><input id="eDate" type="date"></div>
+            <div class="f wide"><label for="eAddress">Address</label><textarea id="eAddress" class="short" maxlength="300"></textarea></div>
+          </div>
+        </div>
+        <div class="group">
+          <h2>Items</h2>
+          <ul class="cs-items" id="items"></ul>
+          <button class="btn btn-line" id="addItem" type="button">Add an item</button>
+        </div>
+        <div class="group">
+          <h2>Commission and delivery</h2>
+          <div class="fields">
+            <div class="f"><label for="ePct">Lifora commission</label><div class="unit"><input id="ePct" type="number" inputmode="decimal" min="0" max="100" step="0.5"><span>%</span></div></div>
+            <div class="f"><label for="eFee">Delivery fee</label><div class="unit"><input id="eFee" type="number" inputmode="decimal" min="0" step="1"><span>INR</span></div></div>
+          </div>
+          <div class="cs-sum" id="sum"></div>
+        </div>
+        <button class="btn btn-primary" id="saveBtn" type="submit" style="width:100%;margin-top:22px">Save changes</button>
+      </form>
       <p style="margin-top:18px"><button class="linkbtn" id="signout" type="button">Sign out</button></p>
     </div>
   </section>
@@ -56,7 +88,10 @@
     <div class="stage" id="stage"><div class="scaler" id="scaler"><div class="pages" id="pagesRoot"></div></div></div>
     <div class="preview-foot">
       <div class="status" id="status" aria-live="polite">Pick a cost sheet</div>
-      <div class="acts"><button class="btn btn-primary" id="pdfBtn" type="button" disabled><span data-icon="download"></span>Download cost sheet</button></div>
+      <div class="acts">
+        <button class="btn btn-line" id="shareBtn" type="button" hidden disabled><span data-icon="share"></span>Send to supply chain</button>
+        <button class="btn btn-primary" id="pdfBtn" type="button" disabled><span data-icon="download"></span>Download PDF</button>
+      </div>
     </div>
   </section>
 </main>
