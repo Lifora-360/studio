@@ -28,6 +28,7 @@ export function clearSharedClient() { store.remove(CLIENT_KEY); }
 export async function fontsReady() {
   const faces = [
     '400 40px "Playfair Display"', '500 40px "Playfair Display"', '600 40px "Playfair Display"', 'italic 400 40px "Playfair Display"',
+    '500 40px "EB Garamond"',
     '400 20px Figtree', '500 20px Figtree', '600 20px Figtree', '700 20px Figtree', '800 20px Figtree'
   ];
   try {

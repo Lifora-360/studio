@@ -15,6 +15,7 @@ const C = {
 };
 const SERIF = '"Playfair Display", Georgia, serif';
 const SANS = 'Figtree, Arial, sans-serif';
+const BRAND = '"EB Garamond", Garamond, Georgia, serif';   // the name "Lifora", as in the logo
 
 const RULES = {
   name: { lines: 1, chars: 28 }, conditions: { lines: 8, chars: 160 }, allergies: { lines: 2, chars: 60 },
@@ -267,9 +268,9 @@ function drawFooter(ctx) {
   if (emblem) {
     const h = 58, w = h * emblem.width / emblem.height;
     ctx.drawImage(emblem, M, y - h + 12, w, h);
-    font(ctx, 500, 34, SERIF); paint(ctx, C.teal);
+    font(ctx, 500, 38, BRAND); paint(ctx, C.teal);
     ctx.fillText('Lifora', M + w + 16, y);
-  } else { font(ctx, 500, 34, SERIF); paint(ctx, C.teal); ctx.fillText('Lifora', M, y); }
+  } else { font(ctx, 500, 38, BRAND); paint(ctx, C.teal); ctx.fillText('Lifora', M, y); }
   font(ctx, 500, 24); paint(ctx, C.faint, 'right');
   ctx.fillText('Updated ' + prettyDate(), M + CW, y);
 }

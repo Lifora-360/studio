@@ -2,14 +2,15 @@ import { $, store, readSharedClient, writeSharedClient, fontsReady, frameSchedul
   downloadBlob, toast, loadScript, ICON, dynamicButton } from './common.js';
 import { db, money, checkoutLink } from './pay-config.js';
 import { DOCTORS } from './rx-config.js';
+import { orderSnapshot } from './costsheet.js';
 
 /* ==========================================================================
-   Supplements: one form → three PDFs
-     schedule  — what to take and when (no prices)          → client
-     bill      — client prices and total, payment link/QR   → client
-     internal  — cost ("O") prices and total cost            → Lifora only
-   Cost prices come from Supabase (supplement_catalogue), readable only by
-   signed-in payment admins, and are never drawn on the schedule or bill.
+   Supplements: one form → two PDFs for the client
+     schedule  — what to take and when (no prices)
+     bill      — client prices and total, payment link/QR
+   The internal cost sheet is never offered for download here. It is saved to
+   supplement_orders whenever the bill is downloaded or a payment link is made,
+   and opened only from the private /cost-sheets/ page.
    ========================================================================== */
 const PAGE_W = 1024, PAGE_H = 1448;
 const DRAFT_KEY = 'lifora.sup.draft';
@@ -18,10 +19,10 @@ const DEFAULT_INSTRUCTIONS = [
   'Do not change the dose or frequency without consulting the prescribing doctor.',
   'Inform the doctor about all current medicines, supplements, allergies, and any new symptoms or adverse reactions.',
   'Keep supplements out of reach of children and store them as directed on the product label.',
-  'Contact the clinic if you have questions or experience any unexpected reaction.'
+  'Contact the team if you have questions or experience any unexpected reaction.'
 ].join('\n');
 const TIMINGS = ['After food', 'Before food', 'Anytime', 'Empty Stomach', '1 hour before sleep'];
-const DOCS = { schedule: 'Schedule', bill: 'Bill', internal: 'Internal' };
+const DOCS = { schedule: 'Schedule', bill: 'Bill' };
 
 let client = null, catalogue = new Map(), rows = [], days = 30, docView = 'schedule', billNo = '', pay = null, uid = 1;
 
@@ -283,40 +284,7 @@ function billDoc() {
   return { page, reserve: 90 };
 }
 
-function internalDoc() {
-  const page = el('div', 'page doc'); const p = el('div', 'rx-page');
-  const head = letterhead([['span', 'Bill no. ' + billNo], ['span', 'Date: ' + ddmmyyyy(val('cDate'))]]);
-  head.querySelector('.rx-doc').prepend(el('div', 'internal-tag', 'INTERNAL · NOT FOR CLIENTS'));
-  p.appendChild(head);
-  const t = el('div', 'doc-title'); t.append(el('h2', null, 'Internal cost sheet'), el('span', null, `${days} days`)); p.appendChild(t);
-  const pt = el('div', 'doc-pt'); pt.append(line('Client', val('cName')), line('Prescribed by', val('docName'), true)); p.appendChild(pt);
-  const table = el('table', 'doc-table');
-  const hr = el('tr');
-  [['#', ''], ['Item', ''], ['Qty', 'num'], ['Cost / bottle', 'num'], ['Cost', 'num']].forEach(([h, c]) => hr.appendChild(el('th', c, h)));
-  const thead = el('thead'); thead.appendChild(hr);
-  const tb = el('tbody');
-  const list = billed();
-  if (!list.length) { const tr = el('tr', 'doc-empty'); const c = td('No billed items yet'); c.colSpan = 5; tr.appendChild(c); tb.appendChild(tr); }
-  list.forEach((r, i) => {
-    const b = bottles(r), co = costPrice(r);
-    const tr = el('tr'); const name = td(r.name.trim(), 'name');
-    name.appendChild(el('small', null, [packLabel(r), r.custom ? 'added by hand' : (r.pack === '60s' ? '60s list' : '30s list')].filter(Boolean).join(' · ')));
-    tr.append(td(String(i + 1)), name, td(String(b), 'num'), td(money(co), 'num'), td(money(b * co), 'num'));
-    tb.appendChild(tr);
-  });
-  const tf = el('tfoot'); const g = el('tr', 'grand');
-  const lab = td('Total cost'); lab.colSpan = 2;
-  g.append(lab, td(String(list.reduce((s, r) => s + bottles(r), 0)), 'num'), td(''), td(money(total(costPrice)), 'num'));
-  tf.appendChild(g);
-  table.append(thead, tb, tf);
-  p.appendChild(table);
-  const locals = rows.filter((r) => r.name.trim() && r.local).map((r) => r.name.trim());
-  if (locals.length) p.appendChild(el('p', 'doc-note', `Not billed (local pharmacy): ${locals.join(', ')}.`));
-  page.appendChild(p);
-  return { page, reserve: 90 };
-}
-
-const BUILD = { schedule: scheduleDoc, bill: billDoc, internal: internalDoc };
+const BUILD = { schedule: scheduleDoc, bill: billDoc };
 
 async function drawQrs(root) {
   const boxes = root.querySelectorAll('[data-qr]');
@@ -390,6 +358,8 @@ function loadDraft() {
   }
   if (!val('cDate')) $('cDate').value = iso(new Date());
   if (!val('instructions')) $('instructions').value = DEFAULT_INSTRUCTIONS;
+  // Older drafts said "the clinic"; the wording is now "the team".
+  $('instructions').value = $('instructions').value.replace('Contact the clinic if you have questions', 'Contact the team if you have questions');
   if (!billNo) billNo = newBillNo();
 }
 function setDays(n) {
@@ -448,8 +418,28 @@ async function createPayLink() {
   });
   if (error) { b.reset(); toast('Couldn’t create the link: ' + error.message); return; }
   pay = { id: data, link: checkoutLink(data), amount };
+  await saveCostSheet();
   b.flash('Link ready');
   changed();
+}
+
+/* ==========================================================================
+   Private cost sheet: saved, never downloaded here
+   ========================================================================== */
+async function saveCostSheet() {
+  const items = billed().map((r) => ({
+    name: r.name.trim(), pack: r.custom ? 'custom' : r.pack, label: packLabel(r),
+    qty: bottles(r), cost: costPrice(r), client: clientPrice(r)
+  }));
+  if (!items.length) return true;
+  const row = orderSnapshot({
+    billNo, date: val('cDate'), clientName: val('cName'), clientPhone: val('cPhone'), doctorName: val('docName'), days,
+    items, localItems: rows.filter((r) => r.name.trim() && r.local).map((r) => r.name.trim()),
+    paymentRequestId: pay && pay.amount === total(clientPrice) ? pay.id : null
+  });
+  const { error } = await client.from('supplement_orders').upsert(row, { onConflict: 'bill_no' });
+  if (error) { console.error(error); toast('The bill is fine, but the cost sheet couldn’t be saved: ' + error.message); return false; }
+  return true;
 }
 
 /* ==========================================================================
@@ -460,7 +450,7 @@ function validate() {
   if (!rows.some((r) => r.name.trim())) { toast('Add at least one supplement.'); return false; }
   return true;
 }
-const fileName = (kind) => `Lifora_${{ schedule: 'Supplement_Schedule', bill: 'Bill', internal: 'INTERNAL_Cost_Sheet' }[kind]}_${safePart(val('cName'), 'Client')}_${val('cDate') || 'undated'}.pdf`;
+const fileName = (kind) => `Lifora_${{ schedule: 'Supplement_Schedule', bill: 'Bill' }[kind]}_${safePart(val('cName'), 'Client')}_${val('cDate') || 'undated'}.pdf`;
 async function pdfFor(kind) {
   await Promise.all([loadScript('../vendor/html2canvas.min.js'), loadScript('../vendor/jspdf.umd.min.js')]);
   await fontsReady();
@@ -480,7 +470,7 @@ async function onPdf() {
   if (!validate()) return;
   const b = dynamicButton($('pdfBtn'));
   b.busy('Preparing');
-  try { downloadBlob(await pdfFor(docView), fileName(docView)); b.flash('Downloaded'); }
+  try { downloadBlob(await pdfFor(docView), fileName(docView)); if (docView === 'bill') await saveCostSheet(); b.flash('Downloaded'); }
   catch (e) { console.error(e); b.reset(); toast('Couldn’t make the PDF. Try again.'); }
   finally { render(); }
 }
@@ -493,7 +483,8 @@ async function onAll() {
       downloadBlob(await pdfFor(kind), fileName(kind));
       await new Promise((r) => setTimeout(r, 400));   // browsers drop downloads fired too close together
     }
-    b.flash('3 PDFs saved');
+    await saveCostSheet();
+    b.flash('2 PDFs saved');
   } catch (e) { console.error(e); b.reset(); toast('Couldn’t make all three PDFs. Try them one at a time.'); }
   finally { render(); }
 }

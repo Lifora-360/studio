@@ -7,7 +7,8 @@ Browser tools the Lifora care team uses to make client material.
 | Client profile picture | `/profile/` | 1600 × 1600 PNG for the client's WhatsApp care-team group |
 | Investigation report | `/report/` | Branded A4 PDF listing the tests the client should get done |
 | Prescription | `/prescription/` | A4 prescription on Lifora letterhead: doctor, client, diagnosis, medicines, advice, review date |
-| Supplements | `/supplements/` | Three A4 PDFs from one form: client schedule, client bill (with payment link and QR), internal cost sheet. Needs sign-in |
+| Supplements | `/supplements/` | Two A4 PDFs for the client: supplement schedule, and bill with payment link and QR. Needs sign-in |
+| Cost sheets | `/cost-sheets/` | Private: the internal cost sheet of every supplement bill, saved automatically. Linked only from Payments |
 | Payments (admin) | `/payments/` | Sign-in register: create UPI payment links, send on WhatsApp, mark paid |
 | Checkout (customers) | `/pay/?id=…` | Public page a client opens to pay by UPI app or QR |
 
@@ -21,7 +22,7 @@ Minimal and client-first. The lotus emblem and wordmark (extracted from the mast
 transparent background) appear small; the client's information is the largest thing on every output.
 
 - Colours: teal `#0e3b38` (from the logo), gold `#b8892e` used sparingly, white, allergy red `#b4462f`.
-- Type: Playfair Display for headings and the client's name, Figtree for everything else. Self-hosted.
+- Type: Playfair Display for headings and the client's name, EB Garamond for the name "Lifora" (as in the logo), Figtree for everything else. Self-hosted.
 
 **Profile picture**: square 1600 × 1600 PNG. Order: name and vitals (with BMI on WHO Asian cut-offs),
 existing conditions, allergies and intolerances (allergies turn red when present), goals and the
@@ -43,7 +44,9 @@ The catalogue (30s and 60s price lists, cost price and client price) lives only 
 shipped in the site code. Edit them in the Supabase table editor.
 
 - Bottles = daily doses × days ÷ tablets per bottle, rounded up (editable per row).
-- The schedule has no prices, the bill has client prices only, and the internal PDF has cost prices only.
+- The schedule has no prices and the bill has client prices only. Staff can't download the internal cost sheet:
+  it is saved to `supplement_orders` when a bill is downloaded or its payment link is made, and opened from
+  `/cost-sheets/`.
 - "Create payment link" on the bill uses the Payments register; the link and QR are printed on the bill.
 
 ## Payments
@@ -87,7 +90,7 @@ assets/css/report.css   report sidebar and A4 page
 assets/js/common.js     storage, share/download, fonts, images, toast
 assets/js/profile.js    canvas drawing for the profile picture
 assets/js/report.js     test catalogue, pagination, PDF export
-assets/fonts/           Playfair Display + Figtree (SIL OFL)
+assets/fonts/           Playfair Display, EB Garamond, Figtree (SIL OFL)
 assets/img/             lotus emblem, logo lockup, favicon
 pay/, payments/         checkout and admin pages
 assets/js/checkout.js   public checkout

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Cost sheets · Lifora</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="../assets/img/favicon.png" type="image/png">
+<link rel="preload" href="../assets/fonts/eb-garamond-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/rx.css">
+<link rel="stylesheet" href="../assets/css/sup.css">
+<style>
+  .sheets{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+  .sheet{display:grid;grid-template-columns:1fr auto;gap:4px 16px;padding:14px 4px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:8px}
+  .sheet:hover{background:var(--mist)}
+  .sheet[aria-selected="true"]{background:#e7efe6}
+  .sheet b{font-size:15px}
+  .sheet .sub{font-size:12.5px;color:var(--muted)}
+  .sheet .amt{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+  .sheet .amt small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+  .sheets .empty{color:var(--muted);padding:20px 4px;cursor:default}
+  .owner-note{font-size:12.5px;color:var(--alert);background:#fbe9e5;border-radius:10px;padding:10px 12px;margin:14px 0 0}
+</style>
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="../"><img src="../assets/img/emblem.webp" alt="" width="30" height="28"><span>Lifora</span></a>
+  <nav class="tabs" aria-label="Tools"><a href="../payments/">Back to Payments</a></nav>
+</header>
+<main class="studio">
+  <section class="form-col" aria-label="Saved cost sheets">
+    <h1 class="form-title">Cost sheets</h1>
+    <p class="form-lede">Saved automatically each time a supplement bill is downloaded or its payment link is made.</p>
+    <p class="owner-note">Internal only. These show what Lifora pays; never send them to a client.</p>
+
+    <form id="signin" class="fields" style="grid-template-columns:1fr;margin-top:24px" hidden novalidate>
+      <div class="f"><label for="email">Email</label><input id="email" type="email" autocomplete="username" required></div>
+      <div class="f"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+      <button class="btn btn-primary" type="submit">Sign in</button>
+      <p class="f"><span class="error" id="signinErr" style="display:block"></span></p>
+    </form>
+
+    <div id="app" hidden>
+      <div class="search" style="margin-top:22px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="q" type="search" placeholder="Search client or bill no." aria-label="Search" autocomplete="off">
+      </div>
+      <ul class="sheets" id="list" role="listbox" aria-label="Cost sheets"><li class="empty">Loading…</li></ul>
+      <p style="margin-top:18px"><button class="linkbtn" id="signout" type="button">Sign out</button></p>
+    </div>
+  </section>
+
+  <section class="preview" aria-label="Preview">
+    <div class="stage" id="stage"><div class="scaler" id="scaler"><div class="pages" id="pagesRoot"></div></div></div>
+    <div class="preview-foot">
+      <div class="status" id="status" aria-live="polite">Pick a cost sheet</div>
+      <div class="acts"><button class="btn btn-primary" id="pdfBtn" type="button" disabled><span data-icon="download"></span>Download cost sheet</button></div>
+    </div>
+  </section>
+</main>
+<script type="module" src="../assets/js/costsheets.js"></script>
+</body>
+</html>

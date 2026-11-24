@@ -7,6 +7,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#ffffff">
 <link rel="icon" href="../assets/img/favicon.png" type="image/png">
+<link rel="preload" href="../assets/fonts/eb-garamond-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="../assets/css/base.css">
 <link rel="stylesheet" href="../assets/css/rx.css">
 <link rel="stylesheet" href="../assets/css/sup.css">
@@ -26,7 +27,7 @@
 <main class="studio">
   <section class="form-col" aria-label="Supplement details">
     <h1 class="form-title">Supplements</h1>
-    <p class="form-lede">Pick the supplements and doses once. You get three PDFs: the schedule for the client, their bill, and an internal cost sheet.</p>
+    <p class="form-lede">Pick the supplements and doses once. You get two PDFs for the client: the schedule and their bill.</p>
 
     <form id="signin" class="fields" style="grid-template-columns:1fr;margin-top:24px" hidden novalidate>
       <p class="co-muted" style="margin:0">Sign in with your Payments account. Prices are only available to signed-in staff.</p>
@@ -83,7 +84,7 @@
         <div class="f"><label for="instructions">Printed on the schedule <span class="count">one per line</span></label><textarea id="instructions" rows="6"></textarea></div>
       </div>
 
-      <p class="privacy">Cost prices appear only on the internal PDF. Nothing here is uploaded except a payment link, if you create one.</p>
+      <p class="privacy">The schedule has no prices and the bill shows client prices only. The internal cost sheet is never downloaded here: it’s saved privately for Lifora when you download the bill or create its payment link.</p>
       <p style="display:flex;gap:22px;flex-wrap:wrap"><button class="linkbtn" id="resetBtn" type="button">Start a new client</button><button class="linkbtn" id="signout" type="button">Sign out</button></p>
     </div>
   </section>
@@ -92,7 +93,6 @@
     <div class="doc-tabs" role="tablist" aria-label="Document">
       <button role="tab" data-doc="schedule" aria-selected="true">Schedule <small>for the client</small></button>
       <button role="tab" data-doc="bill" aria-selected="false">Bill <small>client prices</small></button>
-      <button role="tab" data-doc="internal" aria-selected="false">Internal <small>cost prices</small></button>
     </div>
     <div class="stage" id="stage">
       <div class="scaler" id="scaler"><div class="pages" id="pagesRoot"></div></div>
@@ -101,7 +101,7 @@
       <div class="status" id="status" aria-live="polite"></div>
       <div class="acts">
         <button class="btn btn-line" id="payBtn" type="button" hidden>Create payment link</button>
-        <button class="btn btn-line" id="allBtn" type="button">Download all 3</button>
+        <button class="btn btn-line" id="allBtn" type="button">Download both</button>
         <button class="btn btn-primary" id="pdfBtn" type="button"><span data-icon="download"></span>Download PDF</button>
       </div>
     </div>

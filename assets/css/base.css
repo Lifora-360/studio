@@ -8,6 +8,7 @@
 @font-face{font-family:"Playfair Display";src:url("../fonts/playfair-display-latin-500-normal.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
 @font-face{font-family:"Playfair Display";src:url("../fonts/playfair-display-latin-600-normal.woff2") format("woff2");font-weight:600;font-style:normal;font-display:swap}
 @font-face{font-family:"Playfair Display";src:url("../fonts/playfair-display-latin-400-italic.woff2") format("woff2");font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:"EB Garamond";src:url("../fonts/eb-garamond-latin-500-normal.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
 @font-face{font-family:"Figtree";src:url("../fonts/figtree-latin-400-normal.woff2") format("woff2");font-weight:400;font-display:swap}
 @font-face{font-family:"Figtree";src:url("../fonts/figtree-latin-500-normal.woff2") format("woff2");font-weight:500;font-display:swap}
 @font-face{font-family:"Figtree";src:url("../fonts/figtree-latin-600-normal.woff2") format("woff2");font-weight:600;font-display:swap}
@@ -28,6 +29,7 @@
   --alert:#b4462f;
 
   --serif:"Playfair Display",Georgia,"Times New Roman",serif;
+  --brandface:"EB Garamond",Garamond,Georgia,serif;   /* the name "Lifora", as in the logo */
   --sans:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
   --focus:0 0 0 3px color-mix(in srgb,var(--teal) 22%,transparent);
 }
@@ -43,7 +45,7 @@ a{color:inherit}
 .bar{display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px;padding:0 28px;border-bottom:1px solid var(--line);background:var(--paper);position:sticky;top:0;z-index:10}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--teal)}
 .brand img{width:30px;height:auto;display:block}
-.brand span{font:500 22px/1 var(--serif);letter-spacing:.01em}
+.brand span{font:500 25px/1 var(--brandface);letter-spacing:.01em}
 .tabs{display:flex;gap:26px;height:100%}
 .tabs a{display:flex;align-items:center;font-size:14px;font-weight:600;color:var(--muted);text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px}
 .tabs a:hover{color:var(--teal)}
