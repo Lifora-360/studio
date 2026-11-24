@@ -160,3 +160,7 @@ dialog .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
 @media (prefers-reduced-motion:reduce){
   .rp[data-stage] .rp-feed{animation:none!important;opacity:1;transform:none}
 }
+
+/* Nothing shows while the details load; only a very slow connection gets a quiet line. */
+.co-wait{text-align:center;padding:24px 0;opacity:0;animation:co-wait-in .4s ease 3s forwards}
+@keyframes co-wait-in{to{opacity:1}}

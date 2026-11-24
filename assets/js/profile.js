@@ -6,7 +6,7 @@ let bmiCounter = null;
 /* ==========================================================================
    Square profile picture, client first.
    Order on the card: who (name + vitals) → existing conditions → allergies /
-   intolerances → goals and the client's own words. Brand is a small sign-off.
+   intolerances → goals and current medications. Brand is a small sign-off.
    ========================================================================== */
 const S = 1600, M = 120, CW = S - M * 2;
 const C = {
@@ -18,8 +18,8 @@ const SANS = 'Figtree, Arial, sans-serif';
 const BRAND = '"EB Garamond", Garamond, Georgia, serif';   // the name "Lifora", as in the logo
 
 const RULES = {
-  name: { lines: 1, chars: 28 }, conditions: { lines: 8, chars: 160 }, allergies: { lines: 2, chars: 60 },
-  intolerances: { lines: 2, chars: 60 }, objectives: { lines: 6, chars: 180 }, ask: { lines: 2, chars: 90 },
+  name: { lines: 1, chars: 28 }, conditions: { lines: 12, chars: 420 }, allergies: { lines: 2, chars: 60 },
+  intolerances: { lines: 2, chars: 60 }, objectives: { lines: 6, chars: 180 }, ask: { lines: 8, chars: 240 },
   notAddressed: { lines: 1, chars: 60 }
 };
 const FIELDS = ['name', 'sex', 'age', 'height', 'weight', 'diet', 'conditions', 'allergies', 'intolerances', 'objectives', 'ask', 'notAddressed'];
@@ -205,36 +205,33 @@ function drawConditions(ctx, top) {
     font(ctx, 500, 40); paint(ctx, C.faint); ctx.fillText('None recorded', M, y + 52);
     return y + 100;
   }
-  const H = 84, PAD = 30, GAP = 16, MAXROWS = 3, MORE_W = 150;
-  // Lay out first, draw second, so an overflow note can take the last slot cleanly.
-  const placed = [];
-  let x = M, row = 0;
-  for (const item of list) {
-    const size = fit(ctx, item, CW - PAD * 2, 40, 28, 600);
-    const text = ellipsize(ctx, item, CW - PAD * 2);
-    const w = ctx.measureText(text).width + PAD * 2;
-    if (x + w > M + CW) { row++; x = M; }
-    if (row >= MAXROWS) break;
-    placed.push({ text, size, x, w, row });
-    x += w + GAP;
+  // Every condition is shown: the chips shrink step by step until all of them fit the space.
+  const BUDGET = 330;
+  let layout = null;
+  for (let k = 1; k >= 0.5; k -= 0.05) {
+    const H = Math.round(84 * k), PAD = Math.round(30 * k), GAP = Math.max(8, Math.round(16 * k));
+    const size = Math.max(20, Math.round(40 * k));
+    font(ctx, 600, size);
+    const placed = [];
+    let x = M, row = 0;
+    for (const item of list) {
+      const text = ellipsize(ctx, item, CW - PAD * 2);
+      const w = ctx.measureText(text).width + PAD * 2;
+      if (x + w > M + CW && x > M) { row++; x = M; }
+      placed.push({ text, x, w, row });
+      x += w + GAP;
+    }
+    const rows = row + 1;
+    layout = { H, PAD, GAP, size, placed, rows };
+    if (rows * (H + GAP) <= BUDGET) break;
   }
-  let more = list.length - placed.length;
-  if (more > 0) {
-    // make room for "+N more" at the end of the last row
-    while (placed.length && placed[placed.length - 1].x + placed[placed.length - 1].w + GAP + MORE_W > M + CW) { placed.pop(); more++; }
-  }
+  const { H, PAD, GAP, size, placed, rows } = layout;
+  font(ctx, 600, size); paint(ctx, C.teal);
   placed.forEach((c) => {
     const cy = y + c.row * (H + GAP);
     ctx.beginPath(); ctx.roundRect(c.x, cy, c.w, H, H / 2); ctx.fillStyle = C.chip; ctx.fill();
-    font(ctx, 600, c.size); paint(ctx, C.teal); ctx.fillText(c.text, c.x + PAD, cy + H / 2 + c.size * 0.36);
+    ctx.fillStyle = C.teal; ctx.fillText(c.text, c.x + PAD, cy + H / 2 + size * 0.36);
   });
-  const rows = placed.length ? placed[placed.length - 1].row + 1 : 1;
-  if (more > 0) {
-    const last = placed[placed.length - 1];
-    const mx = last ? last.x + last.w + GAP + 6 : M;
-    font(ctx, 600, 28); paint(ctx, C.muted);
-    ctx.fillText(`+${more} more`, mx, y + (rows - 1) * (H + GAP) + H / 2 + 10);
-  }
   return y + rows * (H + GAP) + 20;
 }
 
@@ -287,25 +284,40 @@ function drawGoals(ctx, top, limit) {
   }
   if (goals.length > shown) { font(ctx, 600, 26); paint(ctx, C.muted); ctx.fillText(`+${goals.length - shown} more`, M + 36, Math.min(y, limit)); }
 
-  /* right: their words + not working on now */
+  /* right: current medications + not working on now */
   let ry = top + 74;
-  label(ctx, 'In their words', rx, ry, C.teal);
-  ry += 66;
-  const ask = val('ask').replace(/\n+/g, ' ');
-  if (ask) {
-    font(ctx, 400, ask.length > 60 ? 34 : 40, SERIF, 'italic');
-    const lines = wrap(ctx, '“' + ask + '”', colW, 4);
+  label(ctx, 'Current medications', rx, ry, C.teal);
+  ry += 62;
+  const meds = items('ask');
+  const room = limit - ry;
+  if (meds.length && !(meds.length === 1 && isNone(meds[0]))) {
+    // One size for the list, shrunk until every medicine fits.
+    let msize = 34, lh, lines;
+    for (; ; msize--) {
+      font(ctx, 500, msize); lh = Math.round(msize * 1.3);
+      lines = meds.map((m) => wrap(ctx, m, colW - 36, 2));
+      const h = lines.reduce((t, l) => t + l.length * lh + 10, 0);
+      if (h - lh <= room || msize <= 24) break;
+    }
     paint(ctx, C.ink);
-    lines.forEach((l, j) => ctx.fillText(l, rx, ry + j * 54));
-    ry += lines.length * 54 + 30;
-  } else { font(ctx, 400, 34, SERIF, 'italic'); paint(ctx, C.faint); ctx.fillText('Not recorded', rx, ry); ry += 84; }
+    lines.forEach((ls) => {
+      ctx.fillStyle = C.gold; ctx.fillRect(rx, ry - Math.round(msize * 0.4), 16, 3);
+      ctx.fillStyle = C.ink;
+      ls.forEach((l, j) => ctx.fillText(l, rx + 36, ry + j * lh));
+      ry += ls.length * lh + 10;
+    });
+    ry += 30;
+  } else { font(ctx, 500, 34); paint(ctx, C.faint); ctx.fillText(meds.length ? 'None' : 'Not recorded', rx, ry); ry += 84; }
 
+  // "Not working on now" goes under whichever column has room left.
   const na = val('notAddressed');
-  if (na && !isNone(na) && ry + 70 < limit) {
-    label(ctx, 'Not working on now', rx, ry);
-    fit(ctx, na, colW, 32, 24, 500);
+  const leftY = goals.length ? Math.min(y, limit) + 20 : top + 220;
+  const nx = leftY <= ry ? M : rx, ny = Math.min(leftY, ry);
+  if (na && !isNone(na) && ny + 60 <= limit + 20) {
+    label(ctx, 'Not working on now', nx, ny);
+    fit(ctx, na, colW, 30, 22, 500);
     paint(ctx, C.muted);
-    ctx.fillText(ellipsize(ctx, na, colW), rx, ry + 48);
+    ctx.fillText(ellipsize(ctx, na, colW), nx, ny + 44);
   }
 }
 
