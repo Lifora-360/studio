@@ -17,11 +17,6 @@ const SERIF = '"Playfair Display", Georgia, serif';
 const SANS = 'Figtree, Arial, sans-serif';
 const BRAND = '"EB Garamond", Garamond, Georgia, serif';   // the name "Lifora", as in the logo
 
-const RULES = {
-  name: { lines: 1, chars: 28 }, conditions: { lines: 12, chars: 420 }, allergies: { lines: 2, chars: 60 },
-  intolerances: { lines: 2, chars: 60 }, objectives: { lines: 6, chars: 180 }, ask: { lines: 8, chars: 240 },
-  notAddressed: { lines: 1, chars: 60 }
-};
 const FIELDS = ['name', 'sex', 'age', 'height', 'weight', 'diet', 'conditions', 'allergies', 'intolerances', 'objectives', 'ask', 'notAddressed'];
 const DRAFT_KEY = 'lifora.profile.v2';
 let emblem = null;
@@ -32,23 +27,6 @@ let emblem = null;
 const val = (id) => String($(id).value || '').replace(/\r/g, '').trim();
 const items = (id) => val(id).split('\n').map((s) => s.trim()).filter(Boolean);
 const isNone = (v) => !v || /^(nil|none|no|na|n\/a|-|nkda)$/i.test(v.trim());
-
-function enforce(id) {
-  const el = $(id), r = RULES[id];
-  if (!el || !r) return;
-  let v = String(el.value || '').replace(/\r/g, '').slice(0, r.chars);
-  const lines = v.split('\n');
-  if (lines.length > r.lines) v = lines.slice(0, r.lines).join('\n');
-  if (id === 'conditions' || id === 'objectives') v = v.split('\n').map((l) => l.slice(0, 48)).join('\n');
-  if (v !== el.value) el.value = v;
-}
-function updateCount(id) {
-  const out = document.querySelector(`[data-count="${id}"]`);
-  if (!out) return;
-  const n = $(id).value.length, max = RULES[id].chars;
-  out.textContent = n >= max * 0.6 ? `${n}/${max}` : '';
-  out.classList.toggle('near', n >= max * 0.85);
-}
 
 function bmi() {
   const h = parseFloat($('height').value), w = parseFloat($('weight').value);
@@ -129,7 +107,7 @@ function resetForm() {
   FIELDS.forEach((id) => { const el = $(id); if (el.tagName === 'SELECT') el.selectedIndex = 0; else el.value = ''; });
   fillVisible();
   store.remove(DRAFT_KEY); clearSharedClient();
-  Object.keys(RULES).forEach(updateCount); updateBmi(); schedule();
+  updateBmi(); schedule();
   $('name').focus();
   toast('Cleared. Ready for the next client.');
 }
@@ -164,6 +142,13 @@ function wrap(ctx, text, maxW, maxLines) {
   if (lines.length > maxLines) lines = lines.slice(0, maxLines - 1).concat(lines.slice(maxLines - 1).join(' '));
   return lines.map((l) => ellipsize(ctx, l, maxW));
 }
+/** Shrink text from `start` towards `min` until it wraps into `maxLines` lines at most. */
+function fitLines(ctx, text, maxW, start, min, maxLines, weight) {
+  let size = start, lines;
+  for (; size >= min; size--) { font(ctx, weight, size); lines = wrap(ctx, text, maxW, 99); if (lines.length <= maxLines) break; }
+  if (size < min) { size = min; font(ctx, weight, size); lines = wrap(ctx, text, maxW, 99); }
+  return { size, lines };
+}
 function rule(ctx, y) { ctx.fillStyle = C.line; ctx.fillRect(M, y, CW, 2); }
 function label(ctx, text, x, y, color = C.muted) { font(ctx, 600, 26); paint(ctx, color, 'left', '0.5px'); ctx.fillText(text, x, y); }
 
@@ -172,7 +157,7 @@ function label(ctx, text, x, y, color = C.muted) { font(ctx, 600, 26); paint(ctx
    ========================================================================== */
 function drawHeader(ctx) {
   const name = val('name') || 'Client name';
-  fit(ctx, name, CW, 112, 64, 500, SERIF);
+  fit(ctx, name, CW, 112, 40, 500, SERIF);
   paint(ctx, val('name') ? C.teal : C.faint, 'center', '-0.5px');
   ctx.fillText(ellipsize(ctx, name, CW), S / 2, 232);
 
@@ -208,9 +193,9 @@ function drawConditions(ctx, top) {
   // Every condition is shown: the chips shrink step by step until all of them fit the space.
   const BUDGET = 330;
   let layout = null;
-  for (let k = 1; k >= 0.5; k -= 0.05) {
+  for (let k = 1; k >= 0.4; k -= 0.05) {
     const H = Math.round(84 * k), PAD = Math.round(30 * k), GAP = Math.max(8, Math.round(16 * k));
-    const size = Math.max(20, Math.round(40 * k));
+    const size = Math.max(18, Math.round(40 * k));
     font(ctx, 600, size);
     const placed = [];
     let x = M, row = 0;
@@ -249,12 +234,12 @@ function drawSafety(ctx, top) {
       label(ctx, k, x + 30, y, C.alert);
     } else label(ctx, k, x, y, C.teal);
     const text = isNone(v) ? 'None' : v.replace(/\n+/g, ', ');
-    fit(ctx, text, colW, 42, 32, 600);
-    const lines = wrap(ctx, text, colW, 2);
+    const { size, lines } = fitLines(ctx, text, colW, 42, 24, 2, 600);
+    const lh = Math.round(size * 1.2);
     paint(ctx, isNone(v) ? C.faint : (flagged ? C.alert : C.ink));
     y += 62;
-    lines.forEach((l, j) => ctx.fillText(l, x, y + j * 50));
-    bottom = Math.max(bottom, y + (lines.length - 1) * 50 + 40);
+    lines.forEach((l, j) => ctx.fillText(l, x, y + j * lh));
+    bottom = Math.max(bottom, y + (lines.length - 1) * lh + 40);
   });
   return bottom + 10;
 }
@@ -267,22 +252,22 @@ function drawGoals(ctx, top, limit) {
   label(ctx, 'Goals', M, y, C.teal);
   const goals = items('objectives');
   y += 62;
-  let shown = 0;
   if (!goals.length) { font(ctx, 500, 34); paint(ctx, C.faint); ctx.fillText('Not set yet', M, y); }
-  // one size for the whole list, so items line up
-  const gsize = goals.reduce((m, g) => Math.min(m, fit(ctx, g, (colW - 36) * 1.6, 34, 28, 500)), 34);
-  for (const g of goals) {
-    font(ctx, 500, gsize);
-    const lines = wrap(ctx, g, colW - 36, 2);
-    const need = lines.length * 44;
-    const reserve = shown < goals.length - 1 ? 40 : 0;
-    if (y + need - 44 > limit - reserve) break;
-    ctx.fillStyle = C.gold; ctx.fillRect(M, y - 14, 16, 3);
-    paint(ctx, C.ink);
-    lines.forEach((l, j) => ctx.fillText(l, M + 36, y + j * 44));
-    y += need + 12; shown++;
+  // One size for the whole list, shrunk until every goal fits.
+  let gsize = 34, glh, glines;
+  for (; ; gsize--) {
+    font(ctx, 500, gsize); glh = Math.round(gsize * 1.3);
+    glines = goals.map((g) => wrap(ctx, g, colW - 36, 99));
+    const h = glines.reduce((t, l) => t + l.length * glh + 12, 0);
+    if (h - glh <= limit - y || gsize <= 18) break;
   }
-  if (goals.length > shown) { font(ctx, 600, 26); paint(ctx, C.muted); ctx.fillText(`+${goals.length - shown} more`, M + 36, Math.min(y, limit)); }
+  paint(ctx, C.ink);
+  glines.forEach((ls) => {
+    ctx.fillStyle = C.gold; ctx.fillRect(M, y - Math.round(gsize * 0.4), 16, 3);
+    ctx.fillStyle = C.ink; ctx.textAlign = 'left';
+    ls.forEach((l, j) => ctx.fillText(l, M + 36, y + j * glh));
+    y += ls.length * glh + 12;
+  });
 
   /* right: current medications + not working on now */
   let ry = top + 74;
@@ -295,9 +280,9 @@ function drawGoals(ctx, top, limit) {
     let msize = 34, lh, lines;
     for (; ; msize--) {
       font(ctx, 500, msize); lh = Math.round(msize * 1.3);
-      lines = meds.map((m) => wrap(ctx, m, colW - 36, 2));
+      lines = meds.map((m) => wrap(ctx, m, colW - 36, 99));
       const h = lines.reduce((t, l) => t + l.length * lh + 10, 0);
-      if (h - lh <= room || msize <= 24) break;
+      if (h - lh <= room || msize <= 18) break;
     }
     paint(ctx, C.ink);
     lines.forEach((ls) => {
@@ -315,9 +300,9 @@ function drawGoals(ctx, top, limit) {
   const nx = leftY <= ry ? M : rx, ny = Math.min(leftY, ry);
   if (na && !isNone(na) && ny + 60 <= limit + 20) {
     label(ctx, 'Not working on now', nx, ny);
-    fit(ctx, na, colW, 30, 22, 500);
+    const { size, lines } = fitLines(ctx, na, colW, 30, 20, 1, 500);
     paint(ctx, C.muted);
-    ctx.fillText(ellipsize(ctx, na, colW), nx, ny + 44);
+    lines.forEach((l, j) => ctx.fillText(l, nx, ny + 44 + j * Math.round(size * 1.2)));
   }
 }
 
@@ -386,12 +371,10 @@ async function onShare() {
 async function init() {
   document.querySelectorAll('[data-icon]').forEach((el) => { el.outerHTML = ICON[el.dataset.icon]; });
   loadDraft();
-  Object.keys(RULES).forEach((id) => { enforce(id); updateCount(id); });
   updateBmi();
   const form = document.querySelector('.form-col');
   form.addEventListener('input', (e) => {
     const id = e.target.id;
-    if (RULES[id]) { enforce(id); updateCount(id); }
     if (['hCm', 'hFt', 'hIn'].includes(id)) { syncHeight(); updateBmi(); }
     if (id === 'wVal') { syncWeight(); updateBmi(); }
     schedule();

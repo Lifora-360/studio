@@ -59,7 +59,7 @@ function renderItems() {
     };
     const rm = el('button', 'linkbtn', 'Remove'); rm.type = 'button';
     rm.addEventListener('click', () => { draft.items.splice(i, 1); renderItems(); touch(); });
-    li.append(field('Item', 'name', { maxLength: 120 }), field('Qty', 'qty', { type: 'number', min: '0', step: '1', inputMode: 'numeric' }),
+    li.append(field('Item', 'name'), field('Qty', 'qty', { type: 'number', min: '0', step: '1', inputMode: 'numeric' }),
       field('Cost / bottle', 'cost', { type: 'number', min: '0', step: '0.01', inputMode: 'decimal' }), rm);
     ul.appendChild(li);
   });

@@ -99,7 +99,7 @@ function renderRows() {
     const top = el('div', 'sup-top');
     const name = el('div', 'sup-name');
     if (r.custom) {
-      const inp = el('input'); inp.placeholder = 'e.g. Vitamin D 60000 IU'; inp.maxLength = 80; inp.value = r.name; inp.setAttribute('aria-label', 'Supplement name');
+      const inp = el('input'); inp.placeholder = 'e.g. Vitamin D 60000 IU'; inp.value = r.name; inp.setAttribute('aria-label', 'Supplement name');
       inp.addEventListener('input', () => { r.name = inp.value; changed(); });
       name.appendChild(inp);
     } else name.textContent = r.name;
@@ -120,7 +120,7 @@ function renderRows() {
     const grid = el('div', 'sup-grid');
     const timingBox = el('div', 'wide');
     const tl = el('label', null, 'When to take'); const ti = el('input'); ti.id = `t${r.key}`; tl.htmlFor = ti.id;
-    ti.value = r.timing; ti.maxLength = 60; ti.setAttribute('list', 'timingList');
+    ti.value = r.timing; ti.setAttribute('list', 'timingList');
     ti.addEventListener('input', () => { r.timing = ti.value; changed(); });
     timingBox.append(tl, ti);
     const doseBox = el('div', 'wide');

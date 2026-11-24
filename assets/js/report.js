@@ -119,7 +119,7 @@ function buildPackages() {
         box.appendChild(row);
         if (id === 'mri' || id === 'ct') {
           const r = el('div', 'region'); r.dataset.regionFor = id;
-          const inp = el('input'); inp.id = id + 'Region'; inp.maxLength = 50;
+          const inp = el('input'); inp.id = id + 'Region';
           inp.placeholder = id === 'mri' ? 'Region, e.g. lumbar spine' : 'Region, e.g. abdomen';
           inp.setAttribute('aria-label', (id === 'mri' ? 'MRI' : 'CT') + ' region');
           r.appendChild(inp);

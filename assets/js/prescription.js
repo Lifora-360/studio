@@ -91,10 +91,10 @@ function renderRows() {
       if (key === 'medicine') input.addEventListener('change', () => rememberMedicine(input.value.trim()));
       box.append(lab, input); f.appendChild(box);
     };
-    field('medicine', 'Medicine and strength', true, () => { const n = el('input'); n.maxLength = 80; n.setAttribute('list', 'medList'); n.placeholder = 'e.g. Inj. Vitamin B12 1500 mcg'; n.autocomplete = 'off'; return n; });
-    field('form', 'Dosage form', false, () => { const n = el('input'); n.maxLength = 30; n.setAttribute('list', 'formList'); return n; });
-    field('frequency', 'Frequency', false, () => { const n = el('input'); n.maxLength = 30; return n; });
-    field('duration', 'Duration', true, () => { const n = el('input'); n.maxLength = 80; return n; });
+    field('medicine', 'Medicine and strength', true, () => { const n = el('input'); n.setAttribute('list', 'medList'); n.placeholder = 'e.g. Inj. Vitamin B12 1500 mcg'; n.autocomplete = 'off'; return n; });
+    field('form', 'Dosage form', false, () => { const n = el('input'); n.setAttribute('list', 'formList'); return n; });
+    field('frequency', 'Frequency', false, () => { const n = el('input'); return n; });
+    field('duration', 'Duration', true, () => { const n = el('input'); return n; });
     const acts = el('div', 'rx-row-acts');
     if (i > 0) { const up = el('button', 'linkbtn', 'Move up'); up.type = 'button'; up.addEventListener('click', () => { [rows[i - 1], rows[i]] = [rows[i], rows[i - 1]]; renderRows(); changed(); }); acts.appendChild(up); }
     const rm = el('button', 'linkbtn', 'Remove'); rm.type = 'button';

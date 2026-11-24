@@ -37,9 +37,9 @@
           <select id="docPick"></select>
           <div class="help">Or type your own details below. Every field can be changed.</div>
         </div>
-        <div class="f wide" id="docNameField"><label for="docName">Doctor’s name</label><input id="docName" maxlength="40" placeholder="Dr. Full Name" autocomplete="off"><div class="error">Add the prescribing doctor’s name.</div></div>
-        <div class="f"><label for="docQual">Qualification</label><input id="docQual" maxlength="40" placeholder="e.g. MBBS, MD" autocomplete="off"></div>
-        <div class="f" id="docRegField"><label for="docReg">Registration no.</label><input id="docReg" maxlength="30" placeholder="e.g. TNMC-000000" autocomplete="off"><div class="error">Add the registration number.</div></div>
+        <div class="f wide" id="docNameField"><label for="docName">Doctor’s name</label><input id="docName" placeholder="Dr. Full Name" autocomplete="off"><div class="error">Add the prescribing doctor’s name.</div></div>
+        <div class="f"><label for="docQual">Qualification</label><input id="docQual" placeholder="e.g. MBBS, MD" autocomplete="off"></div>
+        <div class="f" id="docRegField"><label for="docReg">Registration no.</label><input id="docReg" placeholder="e.g. TNMC-000000" autocomplete="off"><div class="error">Add the registration number.</div></div>
         <div class="f wide">
           <span class="label">Signature <span class="count">optional, stays on this device</span></span>
           <div class="sig-row">
@@ -63,15 +63,15 @@
       <div class="fields">
         <div class="f wide" id="nameField">
           <label for="pName">Client name</label>
-          <input id="pName" maxlength="40" autocomplete="off" placeholder="e.g. Gowri Sankar Naidu">
+          <input id="pName" autocomplete="off" placeholder="e.g. Gowri Sankar Naidu">
           <div class="error">Add the client’s name.</div>
         </div>
         <div class="f"><label for="pAge">Age</label><div class="unit"><input id="pAge" type="number" inputmode="numeric" min="0" max="120"><span>yrs</span></div></div>
         <div class="f"><label for="pSex">Sex</label><select id="pSex"><option value="">Select</option><option value="M">Male</option><option value="F">Female</option><option value="Other">Other</option></select></div>
         <div class="f"><label for="pWeight">Weight</label><div class="unit"><input id="pWeight" type="number" inputmode="decimal" step="0.1" min="1" max="350"><span>kg</span></div></div>
         <div class="f"><label for="rxDate">Date</label><input id="rxDate" type="date"></div>
-        <div class="f wide"><label for="pAddress">Address <span class="count">city is enough</span></label><input id="pAddress" maxlength="60" autocomplete="off"></div>
-        <div class="f wide"><label for="diagnosis">Diagnosis</label><textarea id="diagnosis" class="short" maxlength="200" placeholder="e.g. Vitamin D deficiency, Vitamin B12 deficiency"></textarea></div>
+        <div class="f wide"><label for="pAddress">Address <span class="count">city is enough</span></label><input id="pAddress" autocomplete="off"></div>
+        <div class="f wide"><label for="diagnosis">Diagnosis</label><textarea id="diagnosis" class="short" placeholder="e.g. Vitamin D deficiency, Vitamin B12 deficiency"></textarea></div>
       </div>
     </div>
 
@@ -86,7 +86,7 @@
     <div class="group" id="secAdvice">
       <h2>Advice and review</h2>
       <div class="fields">
-        <div class="f wide"><label for="advice">Advice &amp; investigations <span class="count">one per line</span></label><textarea id="advice" maxlength="600" placeholder="e.g. Both injections can be taken together&#10;Continue the other supplements"></textarea></div>
+        <div class="f wide"><label for="advice">Advice &amp; investigations <span class="count">one per line</span></label><textarea id="advice" placeholder="e.g. Both injections can be taken together&#10;Continue the other supplements"></textarea></div>
         <div class="f"><label for="review">Next review on</label><input id="review" type="date"></div>
         <div class="f"><span class="label">&nbsp;</span><div class="review-quick"><button class="linkbtn" data-review="14" type="button">2 weeks</button><button class="linkbtn" data-review="30" type="button">1 month</button><button class="linkbtn" data-review="90" type="button">3 months</button></div></div>
       </div>
