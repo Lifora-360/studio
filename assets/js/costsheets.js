@@ -1,6 +1,10 @@
 import { $, fontsReady, safePart, downloadBlob, shareBlob, canShareFiles, toast, loadScript, ICON, dynamicButton, frameScheduler } from './common.js';
 import { db, money } from './pay-config.js';
 import { costSheetPage, sheetTotals, SUPPLIER } from './costsheet.js';
+import { counter } from './counter.js';
+import { sectionRail } from './rail.js';
+import { withLogoLoader } from './logo-loader.js';
+let sumUi = null;
 
 /* Admin-only: every supplement order's cost sheet, editable, then sent to the supply chain. */
 const PAGE_W = 1024;
@@ -25,12 +29,17 @@ const redraw = frameScheduler(() => {
   $('pagesRoot').innerHTML = '';
   $('pagesRoot').appendChild(costSheetPage(draft));
   const s = sheetTotals(draft);
-  const sum = $('sum'); sum.innerHTML = '';
-  const line = (k, v, cls) => { const d = el('div', cls); d.append(el('span', null, k), el('span', null, v)); sum.appendChild(d); };
-  line('Total at cost', money(s.total));
-  line(`Commission (${s.pct}%)`, '− ' + money(s.commission));
-  line('Delivery fee', '+ ' + money(s.delivery));
-  line('Net payable', money(s.net), 'net');
+  if (!sumUi) {
+    // Built once; the amounts roll when they change.
+    const sum = $('sum'); sum.innerHTML = '';
+    const line = (label, prefix, cls) => { const d = el('div', cls); const k = el('span', null, label); const v = el('span'); d.append(k, v); sum.appendChild(d); return { k, c: counter(v, { prefix, grouping: 'indian' }) }; };
+    sumUi = { total: line('Total at cost', '₹'), commission: line('Commission', '− ₹'), delivery: line('Delivery fee', '+ ₹'), net: line('Net payable', '₹', 'net') };
+  }
+  const dec = (v) => ({ decimals: Number(v) % 1 ? 2 : 0 });
+  sumUi.total.c.set(s.total, dec(s.total));
+  sumUi.commission.k.textContent = `Commission (${s.pct}%)`; sumUi.commission.c.set(s.commission, dec(s.commission));
+  sumUi.delivery.c.set(s.delivery, dec(s.delivery));
+  sumUi.net.c.set(s.net, dec(s.net));
   $('status').textContent = `${draft.client_name}, bill ${draft.bill_no}, net payable ${money(s.net)}`;
   $('dirty').hidden = !dirty;
   fit();
@@ -112,7 +121,10 @@ function renderList() {
   });
 }
 async function load() {
-  const { data, error } = await client.from('supplement_orders').select('*').order('updated_at', { ascending: false }).limit(500);
+  const list = $('list'); list.innerHTML = '';
+  const host = el('li', 'logo-loader-host'); list.appendChild(host);
+  const { data, error } = await withLogoLoader(host, client.from('supplement_orders').select('*').order('updated_at', { ascending: false }).limit(500), { size: 64, ariaLabel: 'Loading cost sheets' });
+  host.remove();
   if (error) { $('list').innerHTML = ''; $('list').appendChild(el('li', 'empty', 'Couldn’t load cost sheets: ' + error.message)); return; }
   orders = data || [];
   renderList();
@@ -159,6 +171,10 @@ async function enter() {
   const { data: role } = await client.rpc('studio_role');
   if (role !== 'admin') { $('signin').hidden = true; $('noAccess').hidden = false; return; }
   $('signin').hidden = true; $('app').hidden = false;
+  sectionRail($('rail'), [
+    { label: 'Saved', el: $('secSaved') }, { label: 'Delivery', el: $('secDelivery') },
+    { label: 'Items', el: $('secItems') }, { label: 'Commission', el: $('secMoney') }
+  ]);
   load();
 }
 async function boot() {

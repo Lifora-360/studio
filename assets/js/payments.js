@@ -1,6 +1,8 @@
 import { $, readSharedClient, toast, dynamicButton } from './common.js';
 import { db, money, checkoutLink, PRESETS } from './pay-config.js';
 import { counter, rupeeCounter } from './counter.js';
+import { withLogoLoader } from './logo-loader.js';
+let firstLoad = true;
 let stats = null;
 
 let client, rows = [], filter = 'open';
@@ -82,7 +84,16 @@ $('newForm').addEventListener('submit', async (e) => {
 
 /* ---------- register ---------- */
 async function load() {
-  const { data, error } = await client.from('payment_requests').select('*').order('created_at', { ascending: false }).limit(500);
+  const query = client.from('payment_requests').select('*').order('created_at', { ascending: false }).limit(500);
+  let res;
+  if (firstLoad) {
+    firstLoad = false;
+    const list = $('list'); list.innerHTML = '';
+    const host = el('li', 'logo-loader-host'); list.appendChild(host);
+    res = await withLogoLoader(host, query, { size: 64, ariaLabel: 'Loading the payment register' });
+    host.remove();
+  } else res = await query;
+  const { data, error } = res;
   if (error) { $('list').innerHTML = ''; $('list').appendChild(el('li', 'empty', 'Couldn’t load the register: ' + error.message)); return; }
   rows = (data || []).map((r) => ({ ...r, state: statusOf(r) }));
   const month = new Date(); month.setDate(1); month.setHours(0, 0, 0, 0);

@@ -23,12 +23,13 @@
   </nav>
 </header>
 
-<main class="studio">
+<main class="studio with-rail">
+  <nav class="rail-col" aria-label="Jump to section"><ul class="bounce" id="rail"></ul></nav>
   <section class="form-col" aria-label="Prescription details">
     <h1 class="form-title">Prescription</h1>
     <p class="form-lede">Fill in the client and medicines. The A4 prescription updates as you type.</p>
 
-    <div class="group">
+    <div class="group" id="secDoctor">
       <h2>Doctor</h2>
       <div class="fields">
         <div class="f wide">
@@ -57,7 +58,7 @@
       </p>
     </div>
 
-    <div class="group">
+    <div class="group" id="secClient">
       <h2>Client</h2>
       <div class="fields">
         <div class="f wide" id="nameField">
@@ -74,7 +75,7 @@
       </div>
     </div>
 
-    <div class="group">
+    <div class="group" id="secMeds">
       <h2>Medicines <span class="hint" id="rxCount"></span></h2>
       <div class="presets" id="rxPresets"></div>
       <ol class="rx-rows" id="rxRows"></ol>
@@ -82,7 +83,7 @@
       <datalist id="medList"></datalist>
     </div>
 
-    <div class="group">
+    <div class="group" id="secAdvice">
       <h2>Advice and review</h2>
       <div class="fields">
         <div class="f wide"><label for="advice">Advice &amp; investigations <span class="count">one per line</span></label><textarea id="advice" maxlength="600" placeholder="e.g. Both injections can be taken together&#10;Continue the other supplements"></textarea></div>

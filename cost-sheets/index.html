@@ -30,7 +30,8 @@
   <a class="brand" href="../"><img src="../assets/img/emblem-sm.webp" alt="" width="30" height="28"><span>Lifora</span></a>
   <nav class="tabs" aria-label="Tools"><a href="../payments/">Back to Payments</a></nav>
 </header>
-<main class="studio">
+<main class="studio with-rail">
+  <nav class="rail-col" aria-label="Jump to section"><ul class="bounce" id="rail"></ul></nav>
   <section class="form-col" aria-label="Cost sheets">
     <h1 class="form-title">Cost sheets</h1>
     <p class="form-lede">One for every supplement bill, saved automatically. Edit it, then send it to the supply chain.</p>
@@ -46,7 +47,7 @@
     <p class="no-access form-lede" id="noAccess" hidden>Only the admin can open cost sheets. <a href="../payments/">Go to Payments</a></p>
 
     <div id="app" hidden>
-      <div class="group">
+      <div class="group" id="secSaved">
         <h2>Saved <span class="hint" id="count"></span></h2>
         <div class="search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
@@ -56,7 +57,7 @@
       </div>
 
       <form id="editor" hidden novalidate>
-        <div class="group">
+        <div class="group" id="secDelivery">
           <h2>Delivery <span class="dirty" id="dirty" hidden>Unsaved changes</span></h2>
           <div class="fields">
             <div class="f wide"><label for="eName">Client name</label><input id="eName" maxlength="100" autocomplete="off"></div>
@@ -65,12 +66,12 @@
             <div class="f wide"><label for="eAddress">Address</label><textarea id="eAddress" class="short" maxlength="300"></textarea></div>
           </div>
         </div>
-        <div class="group">
+        <div class="group" id="secItems">
           <h2>Items</h2>
           <ul class="cs-items" id="items"></ul>
           <button class="btn btn-line" id="addItem" type="button">Add an item</button>
         </div>
-        <div class="group">
+        <div class="group" id="secMoney">
           <h2>Commission and delivery</h2>
           <div class="fields">
             <div class="f"><label for="ePct">Commission</label><div class="unit"><input id="ePct" type="number" inputmode="decimal" min="0" max="100" step="0.5"><span>%</span></div></div>

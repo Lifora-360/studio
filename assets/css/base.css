@@ -175,3 +175,9 @@ a{color:inherit}
 .bounce-item[data-active="true"]{color:var(--ink)}
 .bounce-heading{padding:28px 4px 4px;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
 .bounce-heading:first-child{padding-top:0}
+.with-rail .group{scroll-margin-top:84px}
+
+/* ---------- logo trace loader (see logo-loader.js) ---------- */
+@keyframes logo-trace-loader-loop { to { stroke-dashoffset: -1; } }
+.logo-loader{display:block;color:var(--teal);overflow:visible}
+.logo-loader-host{display:grid;place-items:center;min-height:140px;padding:24px 0}

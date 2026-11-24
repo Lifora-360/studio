@@ -94,3 +94,42 @@ export function bounceSidebar(ul, { items, value = 0, onChange } = {}) {
 
   return { set: select, get value() { return active; }, snap };
 }
+
+/** A jump list for a long form: clicking scrolls to (and opens) a section, and the dot
+ *  follows the section being read. `sections`: [{ label, el, open?: true }]. */
+export function sectionRail(ul, sections) {
+  if (!ul) return null;
+  let jumping = 0;
+  const motion = () => (matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
+  const rail = bounceSidebar(ul, {
+    items: sections.map((s) => s.label),
+    onChange: (i) => {
+      const s = sections[i];
+      if (s.open && 'open' in s.el) s.el.open = true;
+      // Let the dot rest on the clicked item until the page has finished scrolling there.
+      clearTimeout(jumping);
+      jumping = setTimeout(() => { jumping = 0; }, 400);
+      s.el.scrollIntoView({ behavior: motion(), block: 'start' });
+    }
+  });
+  let queued = false;
+  const spy = () => {
+    queued = false;
+    if (jumping || !ul.offsetParent) return;
+    // The section whose top has crossed ~40% of the screen is the one being read.
+    const line = Math.max(140, window.innerHeight * 0.4);
+    const live = sections.filter((s) => s.el.isConnected && !s.el.hidden && !s.el.closest('.hidden-by-search,[hidden]'));
+    let current = 0;
+    sections.forEach((s, i) => { if (live.includes(s) && s.el.getBoundingClientRect().top <= line) current = i; });
+    // At the very bottom a short last section may never reach the line; pick it only if it's really on screen.
+    const lastIdx = sections.indexOf(live[live.length - 1]);
+    if (lastIdx >= 0 && window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4 &&
+        sections[lastIdx].el.getBoundingClientRect().top < window.innerHeight * 0.85) current = lastIdx;
+    rail.set(current);
+  };
+  window.addEventListener('scroll', () => {
+    if (jumping) { clearTimeout(jumping); jumping = setTimeout(() => { jumping = 0; }, 150); return; }   // still travelling
+    if (!queued) { queued = true; requestAnimationFrame(spy); }
+  }, { passive: true });
+  return rail;
+}

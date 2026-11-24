@@ -24,7 +24,8 @@
   </nav>
 </header>
 
-<main class="studio">
+<main class="studio with-rail">
+  <nav class="rail-col" aria-label="Jump to section"><ul class="bounce" id="rail"></ul></nav>
   <section class="form-col" aria-label="Supplement details">
     <h1 class="form-title">Supplements</h1>
     <p class="form-lede">Pick the supplements and doses once. You get two PDFs for the client: the schedule and their bill.</p>
@@ -37,8 +38,10 @@
       <p class="f"><span class="error" id="signinErr" style="display:block"></span></p>
     </form>
 
+    <div id="appLoading" class="logo-loader-host" hidden></div>
+
     <div id="app" hidden>
-      <div class="group">
+      <div class="group" id="secClient">
         <h2>Client</h2>
         <div class="fields">
           <div class="f wide" id="nameField"><label for="cName">Client name</label><input id="cName" maxlength="60" autocomplete="off"><div class="error">Add the client’s name.</div></div>
@@ -50,7 +53,7 @@
         </div>
       </div>
 
-      <div class="group">
+      <div class="group" id="secDoctor">
         <h2>Doctor</h2>
         <div class="fields">
           <div class="f wide"><label for="docName">Doctor’s name</label><input id="docName" maxlength="40" list="docList" autocomplete="off" placeholder="Dr. Full Name"><datalist id="docList"></datalist></div>
@@ -59,7 +62,7 @@
         </div>
       </div>
 
-      <div class="group">
+      <div class="group" id="secDays">
         <h2>Duration</h2>
         <div class="seg" role="radiogroup" aria-label="Duration" id="daySeg">
           <button type="button" role="radio" data-days="30">30 days</button>
@@ -69,7 +72,7 @@
         <p class="help" style="font-size:12.5px;color:var(--muted);margin:8px 0 0">Bottles are worked out from the daily doses and the number of days. You can change any of them.</p>
       </div>
 
-      <div class="group">
+      <div class="group" id="secSups">
         <h2>Supplements <span class="hint" id="supCount"></span></h2>
         <div class="search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
@@ -78,9 +81,10 @@
         <div class="cat" id="catalogue" aria-label="Catalogue"></div>
         <ol class="sup-rows" id="rows"></ol>
         <button class="btn btn-line" id="addCustom" type="button">Add something not in the list</button>
+        <p class="sup-total">Bill total <b id="billTotal"></b></p>
       </div>
 
-      <div class="group">
+      <div class="group" id="secInstr">
         <h2>Client instructions</h2>
         <div class="f"><label for="instructions">Printed on the schedule <span class="count">one per line</span></label><textarea id="instructions" rows="6"></textarea></div>
       </div>

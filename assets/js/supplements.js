@@ -2,6 +2,10 @@ import { $, store, readSharedClient, writeSharedClient, fontsReady, frameSchedul
   downloadBlob, toast, loadScript, ICON, dynamicButton } from './common.js';
 import { db, money, checkoutLink } from './pay-config.js';
 import { DOCTORS } from './rx-config.js';
+import { counter, rupeeCounter } from './counter.js';
+import { sectionRail } from './rail.js';
+import { withLogoLoader } from './logo-loader.js';
+let supCounter = null, billCounter = null;
 
 /* ==========================================================================
    Supplements: one form → two PDFs for the client
@@ -170,7 +174,11 @@ function renderRows() {
     refreshRow(li, r);
   });
   const n = rows.filter((r) => r.name.trim()).length;
-  $('supCount').textContent = n ? `${n} on the schedule` : '';
+  const sc = $('supCount');
+  if (!supCounter) { sc.textContent = ''; const num = el('span'); const w = el('span'); w.id = 'supWord'; sc.append(num, w); supCounter = counter(num); }
+  sc.firstChild.hidden = !n;
+  if (n) supCounter.set(n);
+  $('supWord').textContent = n ? ' on the schedule' : '';
 }
 function refreshRow(li, r) {
   const bi = li.querySelector('.bottle-input');
@@ -328,7 +336,8 @@ function saveDraft() {
   store.set(DRAFT_KEY, d);
   writeSharedClient({ name: val('cName'), age: val('cAge'), sex: $('cSex').value });
 }
-const schedule = frameScheduler(() => { render(); saveDraft(); updatePayPanel(); });
+function updateBillTotal() { if (!billCounter) billCounter = rupeeCounter($('billTotal')); billCounter.set(total(clientPrice)); }
+const schedule = frameScheduler(() => { render(); saveDraft(); updatePayPanel(); updateBillTotal(); });
 function changed() { schedule(); }
 
 function loadDraft() {
@@ -488,8 +497,11 @@ async function loadCatalogue() {
   if (!catalogue.size) throw new Error('This account isn’t set up for Lifora Studio yet. Ask the admin to add you as staff.');
 }
 async function openApp() {
-  try { await loadCatalogue(); }
-  catch (e) { $('signin').hidden = false; $('signinErr').textContent = e.message || 'Couldn’t load the supplement list.'; return; }
+  $('signin').hidden = true;
+  const host = $('appLoading'); host.hidden = false;
+  try { await withLogoLoader(host, loadCatalogue(), { size: 72, ariaLabel: 'Loading the supplement list' }); }
+  catch (e) { host.hidden = true; $('signin').hidden = false; $('signinErr').textContent = e.message || 'Couldn’t load the supplement list.'; return; }
+  host.hidden = true;
   $('signin').hidden = true; $('app').hidden = false;
   const dl = el('datalist'); dl.id = 'timingList'; TIMINGS.forEach((t) => dl.appendChild(new Option(t))); document.body.appendChild(dl);
   const docs = [...DOCTORS, ...store.get('lifora.rx.doctors', [])];
@@ -499,6 +511,10 @@ async function openApp() {
   setDays(days);
   document.querySelectorAll('.doc-tabs [data-doc]').forEach((t) => t.setAttribute('aria-selected', String(t.dataset.doc === docView)));
   changed();
+  sectionRail($('rail'), [
+    { label: 'Client', el: $('secClient') }, { label: 'Doctor', el: $('secDoctor') }, { label: 'Duration', el: $('secDays') },
+    { label: 'Supplements', el: $('secSups') }, { label: 'Instructions', el: $('secInstr') }
+  ]);
 }
 async function boot() {
   document.querySelectorAll('[data-icon]').forEach((n) => { n.outerHTML = ICON[n.dataset.icon]; });

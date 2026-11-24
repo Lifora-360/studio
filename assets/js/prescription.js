@@ -1,6 +1,9 @@
 import { $, store, readSharedClient, writeSharedClient, fontsReady, frameScheduler, safePart,
   downloadBlob, shareBlob, canShareFiles, toast, loadScript, ICON, dynamicButton } from './common.js';
 import { DOCTORS, PRESETS, DOSAGE_FORMS } from './rx-config.js';
+import { counter } from './counter.js';
+import { sectionRail } from './rail.js';
+let medCounter = null;
 
 const PAGE_W = 1024, PAGE_H = 1448, MAX_ROWS = 10;
 const DRAFT_KEY = 'lifora.rx.draft', DOCS_KEY = 'lifora.rx.doctors', SIG_PREFIX = 'lifora.rx.sig.', MEDS_KEY = 'lifora.rx.meds';
@@ -102,7 +105,11 @@ function renderRows() {
   });
   $('addRow').disabled = rows.length >= MAX_ROWS;
   const filled = rows.filter((r) => r.medicine.trim()).length;
-  $('rxCount').textContent = filled ? `${filled} on the prescription` : '';
+  const rc = $('rxCount');
+  if (!medCounter) { rc.textContent = ''; const n = document.createElement('span'); const w = document.createElement('span'); w.id = 'rxWord'; rc.append(n, w); medCounter = counter(n); }
+  rc.firstChild.hidden = !filled;
+  if (filled) medCounter.set(filled);
+  $('rxWord').textContent = filled ? ' on the prescription' : '';
 }
 function addRow(data) {
   const empty = rows.findIndex((r) => !r.medicine.trim() && !r.form && !r.frequency && !r.duration);
@@ -350,5 +357,9 @@ function init() {
   new ResizeObserver(fit).observe($('stage'));
   render();
   fontsReady().then(render);
+  sectionRail($('rail'), [
+    { label: 'Doctor', el: $('secDoctor') }, { label: 'Client', el: $('secClient') },
+    { label: 'Medicines', el: $('secMeds') }, { label: 'Advice', el: $('secAdvice') }
+  ]);
 }
 init();
