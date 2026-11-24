@@ -31,8 +31,8 @@
 
     <form id="signin" class="fields" style="grid-template-columns:1fr;margin-top:24px" hidden novalidate>
       <p class="co-muted" style="margin:0">Sign in with your Payments account. Prices are only available to signed-in staff.</p>
-      <div class="f"><label for="email">Email</label><input id="email" type="email" autocomplete="username" required></div>
-      <div class="f"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+      <div class="f"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="username" required></div>
+      <div class="f"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required></div>
       <button class="btn btn-primary" type="submit">Sign in</button>
       <p class="f"><span class="error" id="signinErr" style="display:block"></span></p>
     </form>

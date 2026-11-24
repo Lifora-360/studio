@@ -35,7 +35,7 @@
 .rx-head{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:30px;border-bottom:1.5px solid #e4e9e7}
 .rx-mark{display:flex;flex-direction:column;align-items:center;width:240px}
 .rx-mark img{width:184px;height:auto;display:block}
-.rx-mark .tag{display:flex;align-items:center;gap:10px;margin-top:8px;font:italic 400 17px var(--serif);color:#0e3b38;white-space:nowrap}
+.rx-mark .tag{display:flex;align-items:center;gap:10px;margin-top:8px;font:italic 400 19px var(--brandface);color:#0e3b38;white-space:nowrap}
 .rx-mark .tag::before,.rx-mark .tag::after{content:'';width:26px;height:1px;background:#b8892e}
 .rx-doc{text-align:right;padding-top:6px}
 .rx-doc b{display:block;font-size:23px;font-weight:700;color:#1a2b29}

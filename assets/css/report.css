@@ -78,7 +78,7 @@
 .pg-note p,.pg-note li{font-size:12px;line-height:1.6;color:var(--muted);margin:0}
 .pg-note ul{margin:0;padding:0 0 0 16px}
 .pg-foot{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--faint)}
-.pg-foot .tag{font:italic 400 13px var(--serif);color:var(--teal)}
+.pg-foot .tag{font:italic 400 15px var(--brandface);color:var(--teal)}
 
 @media print{
   @page{size:A4;margin:0}

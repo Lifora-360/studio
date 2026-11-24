@@ -28,8 +28,8 @@
     <h1 class="form-title">Payments</h1>
     <p class="form-lede">Sign in to create payment links and keep the register.</p>
     <form id="signinForm" class="fields" style="grid-template-columns:1fr;margin-top:24px" novalidate>
-      <div class="f"><label for="email">Email</label><input id="email" type="email" autocomplete="username" required></div>
-      <div class="f"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+      <div class="f"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="username" required></div>
+      <div class="f"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required></div>
       <button class="btn btn-primary" type="submit">Sign in</button>
       <p class="f"><span class="error" id="signinErr" style="display:block"></span></p>
     </form>

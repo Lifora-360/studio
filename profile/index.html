@@ -14,6 +14,10 @@
 <style>
   .dp{width:min(100%,680px,calc(100dvh - 210px));aspect-ratio:1;display:block;background:#fff;box-shadow:0 1px 2px #0e3b3814,0 18px 40px #0e3b3816}
   @media (max-width:980px){.dp{width:min(100%,520px)}}
+  .uswitch{display:inline-flex;border:1px solid var(--line-2);border-radius:999px;overflow:hidden;margin-left:auto}
+  .uswitch button{border:0;background:none;padding:2px 9px;font-size:11.5px;font-weight:600;color:var(--muted);cursor:pointer}
+  .uswitch button[aria-checked="true"]{background:var(--teal);color:#fff}
+  .ftin{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 </style>
 </head>
 <body>
@@ -49,12 +53,18 @@
           <div class="unit"><input id="age" type="number" inputmode="numeric" min="1" max="120" placeholder="45"><span>yrs</span></div>
         </div>
         <div class="f">
-          <label for="height">Height</label>
-          <div class="unit"><input id="height" type="number" inputmode="decimal" min="50" max="250" placeholder="167"><span>cm</span></div>
+          <span class="label">Height <span class="uswitch" role="radiogroup" aria-label="Height unit"><button type="button" role="radio" data-hunit="cm">cm</button><button type="button" role="radio" data-hunit="ft">ft/in</button></span></span>
+          <div class="unit" id="hCmBox"><input id="hCm" type="number" inputmode="decimal" min="50" max="250" placeholder="167" aria-label="Height in centimetres"><span>cm</span></div>
+          <div class="ftin" id="hFtBox" hidden>
+            <div class="unit"><input id="hFt" type="number" inputmode="numeric" min="1" max="8" placeholder="5" aria-label="Feet"><span>ft</span></div>
+            <div class="unit"><input id="hIn" type="number" inputmode="decimal" min="0" max="11.9" step="0.5" placeholder="6" aria-label="Inches"><span>in</span></div>
+          </div>
+          <input id="height" type="hidden">
         </div>
         <div class="f">
-          <label for="weight">Weight</label>
-          <div class="unit"><input id="weight" type="number" inputmode="decimal" step="0.1" min="20" max="300" placeholder="98"><span>kg</span></div>
+          <span class="label">Weight <span class="uswitch" role="radiogroup" aria-label="Weight unit"><button type="button" role="radio" data-wunit="kg">kg</button><button type="button" role="radio" data-wunit="lb">lb</button></span></span>
+          <div class="unit"><input id="wVal" type="number" inputmode="decimal" step="0.1" min="1" max="700" placeholder="98" aria-label="Weight"><span id="wUnitLabel">kg</span></div>
+          <input id="weight" type="hidden">
         </div>
         <div class="f">
           <span class="label">BMI</span>

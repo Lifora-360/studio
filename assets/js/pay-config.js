@@ -20,7 +20,12 @@ export async function db() {
   if (client) return client;
   const { loadScript } = await import('./common.js');
   await loadScript(new URL('../../vendor/supabase-2.58.0.min.js', import.meta.url).href);
-  client = window.supabase.createClient(SUPABASE.url, SUPABASE.anonKey);
+  // Sign-in lasts only while this browser tab is open: closing it signs the person out,
+  // so the login is asked again next time. (Browsers can still save and fill in the password.)
+  try { Object.keys(localStorage).filter((k) => /^sb-.*-auth-token$/.test(k)).forEach((k) => localStorage.removeItem(k)); } catch {}
+  client = window.supabase.createClient(SUPABASE.url, SUPABASE.anonKey, {
+    auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: true }
+  });
   return client;
 }
 

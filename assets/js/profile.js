@@ -58,6 +58,48 @@ function bmi() {
   const band = v < 18.5 ? 'Underweight' : v < 23 ? 'Normal' : v < 25 ? 'Overweight' : v < 30 ? 'Obese I' : 'Obese II';
   return { value: v.toFixed(1), band };
 }
+/* ---------- height and weight units ----------
+   Hidden #height (cm) and #weight (kg) always hold the canonical values used for BMI;
+   the visible fields show whichever unit is chosen and convert when it's switched. */
+const units = { h: 'cm', w: 'kg' };
+const r1 = (n) => Math.round(n * 10) / 10;
+const trim = (n) => String(r1(n)).replace(/\.0$/, '');
+function cmToFtIn(cm) {
+  const total = cm / 2.54;
+  let ft = Math.floor(total / 12), inch = Math.round((total - ft * 12) * 2) / 2;
+  if (inch >= 12) { ft += 1; inch = 0; }
+  return { ft, inch };
+}
+// Canonical values keep 3 decimals so switching units back and forth never drifts.
+const r3 = (n) => String(Math.round(n * 1000) / 1000);
+function syncHeight() {
+  if (units.h === 'cm') { $('height').value = val('hCm'); return; }
+  const ft = parseFloat($('hFt').value) || 0, inch = parseFloat($('hIn').value) || 0;
+  $('height').value = ft || inch ? r3((ft * 12 + inch) * 2.54) : '';
+}
+function syncWeight() {
+  const w = parseFloat($('wVal').value);
+  $('weight').value = Number.isFinite(w) ? r3(units.w === 'kg' ? w : w / 2.20462) : '';
+}
+function fillVisible() {
+  const cm = parseFloat($('height').value), kg = parseFloat($('weight').value);
+  $('hCmBox').hidden = units.h !== 'cm'; $('hFtBox').hidden = units.h !== 'ft';
+  if (units.h === 'cm') $('hCm').value = Number.isFinite(cm) ? trim(cm) : '';
+  else if (Number.isFinite(cm)) { const { ft, inch } = cmToFtIn(cm); $('hFt').value = ft; $('hIn').value = trim(inch); }
+  else { $('hFt').value = ''; $('hIn').value = ''; }
+  $('wVal').value = Number.isFinite(kg) ? trim(units.w === 'kg' ? kg : kg * 2.20462) : '';
+  $('wUnitLabel').textContent = units.w;
+  document.querySelectorAll('[data-hunit]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.hunit === units.h)));
+  document.querySelectorAll('[data-wunit]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.wunit === units.w)));
+}
+function heightText() {
+  if (!val('height')) return '';
+  if (units.h === 'cm') return val('hCm') + ' cm';
+  const ft = val('hFt') || '0', inch = val('hIn');
+  return inch && Number(inch) ? `${ft} ft ${inch} in` : `${ft} ft`;
+}
+function weightText() { return val('weight') ? `${val('wVal')} ${units.w}` : ''; }
+
 function updateBmi() {
   const b = bmi();
   if (!bmiCounter) bmiCounter = counter($('bmiVal'), { decimals: 1 });
@@ -69,18 +111,23 @@ function updateBmi() {
 function saveDraft() {
   const d = {};
   FIELDS.forEach((id) => { d[id] = $(id).value; });
+  d.hUnit = units.h; d.wUnit = units.w;
   store.set(DRAFT_KEY, d);
   writeSharedClient({ name: val('name'), age: val('age'), sex: $('sex').value });
 }
 function loadDraft() {
   const d = store.get(DRAFT_KEY), c = readSharedClient();
   if (d) FIELDS.forEach((id) => { if (d[id] != null) $(id).value = d[id]; });
+  if (d && (d.hUnit === 'cm' || d.hUnit === 'ft')) units.h = d.hUnit;
+  if (d && (d.wUnit === 'kg' || d.wUnit === 'lb')) units.w = d.wUnit;
+  fillVisible();
   if (!val('name') && c.name) $('name').value = c.name;
   if (!val('age') && c.age) $('age').value = c.age;
   if (!$('sex').value && c.sex) $('sex').value = c.sex;
 }
 function resetForm() {
   FIELDS.forEach((id) => { const el = $(id); if (el.tagName === 'SELECT') el.selectedIndex = 0; else el.value = ''; });
+  fillVisible();
   store.remove(DRAFT_KEY); clearSharedClient();
   Object.keys(RULES).forEach(updateCount); updateBmi(); schedule();
   $('name').focus();
@@ -132,8 +179,8 @@ function drawHeader(ctx) {
   const b = bmi();
   const cols = [
     ['Sex, age', [$('sex').value, val('age') && val('age') + ' yrs'].filter(Boolean).join(', ')],
-    ['Height', val('height') && val('height') + ' cm'],
-    ['Weight', val('weight') && val('weight') + ' kg'],
+    ['Height', heightText()],
+    ['Weight', weightText()],
     ['BMI', b ? b.value : ''],
     ['Diet', $('diet').value]
   ];
@@ -333,11 +380,14 @@ async function init() {
   form.addEventListener('input', (e) => {
     const id = e.target.id;
     if (RULES[id]) { enforce(id); updateCount(id); }
-    if (id === 'height' || id === 'weight') updateBmi();
+    if (['hCm', 'hFt', 'hIn'].includes(id)) { syncHeight(); updateBmi(); }
+    if (id === 'wVal') { syncWeight(); updateBmi(); }
     schedule();
   });
   form.addEventListener('change', schedule);
   $('resetBtn').addEventListener('click', resetForm);
+  document.querySelectorAll('[data-hunit]').forEach((b) => b.addEventListener('click', () => { units.h = b.dataset.hunit; fillVisible(); updateBmi(); schedule(); }));
+  document.querySelectorAll('[data-wunit]').forEach((b) => b.addEventListener('click', () => { units.w = b.dataset.wunit; fillVisible(); updateBmi(); schedule(); }));
   $('downloadBtn').addEventListener('click', onDownload);
   if (canShareFiles('image/png')) { $('shareBtn').hidden = false; $('shareBtn').addEventListener('click', onShare); }
   draw();
