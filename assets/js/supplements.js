@@ -91,9 +91,32 @@ function renderCatalogue() {
 }
 
 /* ---------- form: selected rows ---------- */
+// Only supplements sold in both bottle sizes can be switched, one by one or all together.
+// (Multi Vitamin, Q10, the spray and Shilajit have the same bottle on both lists, so they stay as they are.)
+const switchable = (r) => {
+  if (r.custom) return false;
+  const c = catalogue.get(r.name) || {};
+  return !!(c['30s'] && c['60s']) && c['30s'].per_pack !== c['60s'].per_pack && c['30s'].unit !== 'pack';
+};
+function updatePackAll() {
+  const sw = rows.filter(switchable);
+  $('packAll').hidden = !sw.length;
+  document.querySelectorAll('#packAll [data-pack]').forEach((b) => {
+    b.setAttribute('aria-checked', String(sw.length > 0 && sw.every((r) => r.pack === b.dataset.pack)));
+  });
+}
+function switchAll(p) {
+  const sw = rows.filter(switchable);
+  const moved = sw.filter((r) => r.pack !== p).length;
+  sw.forEach((r) => { r.pack = p; });
+  renderRows(); changed();
+  const fixed = rows.filter((r) => !r.custom && !switchable(r)).length;
+  toast(moved ? `Switched ${moved} to the ${p} list${fixed ? `; ${fixed} only come${fixed === 1 ? 's' : ''} in one size` : ''}.` : `All are already on the ${p} list.`);
+}
 function renderRows() {
   const ol = $('rows');
   ol.innerHTML = '';
+  updatePackAll();
   rows.forEach((r, i) => {
     const li = el('li', 'sup-row' + (r.local ? ' local' : ''));
     const top = el('div', 'sup-top');
@@ -104,16 +127,18 @@ function renderRows() {
       name.appendChild(inp);
     } else name.textContent = r.name;
     top.appendChild(name);
-    if (!r.custom) {
+    if (switchable(r)) {
       const packs = el('div', 'packs'); packs.setAttribute('role', 'radiogroup'); packs.setAttribute('aria-label', 'Bottle size');
       ['30s', '60s'].forEach((p) => {
-        if (!catalogue.get(r.name)[p]) return;
         const b = el('button', null, p === '30s' ? '30s list' : '60s list'); b.type = 'button';
         b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(r.pack === p));
         b.addEventListener('click', () => { r.pack = p; renderRows(); changed(); });
         packs.appendChild(b);
       });
       top.appendChild(packs);
+    } else if (!r.custom) {
+      const c = catFor(r);
+      top.appendChild(el('span', 'pack-only', c && c.unit !== 'pack' && c.per_pack ? `${packLabel(r)} only` : 'One size'));
     }
     li.appendChild(top);
 
@@ -534,6 +559,7 @@ $('signin').addEventListener('submit', async (e) => {
 $('signout').addEventListener('click', async () => { await client.auth.signOut(); location.reload(); });
 $('supSearch').addEventListener('input', renderCatalogue);
 $('addCustom').addEventListener('click', addCustom);
+document.querySelectorAll('#packAll [data-pack]').forEach((b) => b.addEventListener('click', () => switchAll(b.dataset.pack)));
 document.querySelectorAll('#daySeg [data-days]').forEach((b) => b.addEventListener('click', () => setDays(b.dataset.days)));
 $('days').addEventListener('input', () => { if (int($('days').value)) setDays($('days').value); });
 document.querySelector('.form-col').addEventListener('input', (e) => {

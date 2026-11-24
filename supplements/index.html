@@ -79,6 +79,12 @@
           <input id="supSearch" type="search" placeholder="Find a supplement" aria-label="Find a supplement" autocomplete="off">
         </div>
         <div class="cat" id="catalogue" aria-label="Catalogue"></div>
+        <div class="pack-all" id="packAll" hidden>
+          <span>Switch all bottles</span>
+          <div class="packs" role="radiogroup" aria-label="Bottle size for every supplement that comes in both">
+            <button type="button" role="radio" data-pack="30s" aria-checked="false">All 30s</button><button type="button" role="radio" data-pack="60s" aria-checked="false">All 60s</button>
+          </div>
+        </div>
         <ol class="sup-rows" id="rows"></ol>
         <button class="btn btn-line" id="addCustom" type="button">Add something not in the list</button>
         <p class="sup-total">Bill total <b id="billTotal"></b></p>
