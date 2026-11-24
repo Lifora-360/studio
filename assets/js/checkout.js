@@ -1,7 +1,6 @@
 import { $, loadScript, toast, store, safePart, downloadBlob, shareBlob, canShareFiles, fontsReady, dynamicButton } from './common.js';
 import { rpc, UPI, money, upiUri } from './pay-config.js';
 import { rupeeCounter } from './counter.js';
-import { withLogoLoader } from './logo-loader.js';
 
 /* Public checkout: /pay/?id=<uuid>  (old links used ?pay=<uuid>; both work). */
 const params = new URLSearchParams(location.search);
@@ -155,8 +154,7 @@ function renderPaid(r) {
 async function init() {
   if (!UUID.test(id)) { show('missing'); return; }
   try {
-    // Quick loads never show it; slow ones trace briefly and resolve fast so the payment isn't held up.
-    request = await withLogoLoader($('coLoader'), fetchRequest(), { size: 72, delayMs: 400, loopDurationSeconds: 1.1, fillFadeSeconds: 0.25, ariaLabel: 'Loading your payment' });
+    request = await fetchRequest();
   } catch (e) { console.error(e); show('missing'); return; }
   if (!request || request.status === 'expired') { show('missing'); return; }
   if (request.status === 'paid') { renderPaid(request); return; }
