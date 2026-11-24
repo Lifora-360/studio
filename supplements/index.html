@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Supplements · Lifora</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="../assets/img/favicon.png" type="image/png">
+<link rel="stylesheet" href="../assets/css/base.css">
+<link rel="stylesheet" href="../assets/css/rx.css">
+<link rel="stylesheet" href="../assets/css/sup.css">
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="../"><img src="../assets/img/emblem.webp" alt="" width="30" height="28"><span>Lifora</span></a>
+  <nav class="tabs" aria-label="Tools">
+    <a href="../profile/">Profile picture</a>
+    <a href="../report/">Test report</a>
+    <a href="../prescription/">Prescription</a>
+    <a href="./" aria-current="page">Supplements</a>
+    <a href="../payments/">Payments</a>
+  </nav>
+</header>
+
+<main class="studio">
+  <section class="form-col" aria-label="Supplement details">
+    <h1 class="form-title">Supplements</h1>
+    <p class="form-lede">Pick the supplements and doses once. You get three PDFs: the schedule for the client, their bill, and an internal cost sheet.</p>
+
+    <form id="signin" class="fields" style="grid-template-columns:1fr;margin-top:24px" hidden novalidate>
+      <p class="co-muted" style="margin:0">Sign in with your Payments account. Prices are only available to signed-in staff.</p>
+      <div class="f"><label for="email">Email</label><input id="email" type="email" autocomplete="username" required></div>
+      <div class="f"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+      <button class="btn btn-primary" type="submit">Sign in</button>
+      <p class="f"><span class="error" id="signinErr" style="display:block"></span></p>
+    </form>
+
+    <div id="app" hidden>
+      <div class="group">
+        <h2>Client</h2>
+        <div class="fields">
+          <div class="f wide" id="nameField"><label for="cName">Client name</label><input id="cName" maxlength="60" autocomplete="off"><div class="error">Add the client’s name.</div></div>
+          <div class="f"><label for="cAge">Age</label><div class="unit"><input id="cAge" type="number" inputmode="numeric" min="0" max="120"><span>yrs</span></div></div>
+          <div class="f"><label for="cSex">Sex</label><select id="cSex"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+          <div class="f"><label for="cDate">Date</label><input id="cDate" type="date"></div>
+          <div class="f"><label for="cPhone">WhatsApp <span class="count">for the bill</span></label><input id="cPhone" inputmode="tel" maxlength="16" autocomplete="off"></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>Doctor</h2>
+        <div class="fields">
+          <div class="f wide"><label for="docName">Doctor’s name</label><input id="docName" maxlength="40" list="docList" autocomplete="off" placeholder="Dr. Full Name"><datalist id="docList"></datalist></div>
+          <div class="f"><label for="docQual">Qualification</label><input id="docQual" maxlength="40" autocomplete="off" placeholder="e.g. MBBS"></div>
+          <div class="f"><label for="docReg">Registration no.</label><input id="docReg" maxlength="30" autocomplete="off" placeholder="e.g. TNMC-000000"></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h2>Duration</h2>
+        <div class="seg" role="radiogroup" aria-label="Duration" id="daySeg">
+          <button type="button" role="radio" data-days="30">30 days</button>
+          <button type="button" role="radio" data-days="90">90 days</button>
+          <span class="seg-custom"><input id="days" type="number" inputmode="numeric" min="1" max="365" aria-label="Number of days"><span>days</span></span>
+        </div>
+        <p class="help" style="font-size:12.5px;color:var(--muted);margin:8px 0 0">Bottles are worked out from the daily doses and the number of days. You can change any of them.</p>
+      </div>
+
+      <div class="group">
+        <h2>Supplements <span class="hint" id="supCount"></span></h2>
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input id="supSearch" type="search" placeholder="Find a supplement" aria-label="Find a supplement" autocomplete="off">
+        </div>
+        <div class="cat" id="catalogue" aria-label="Catalogue"></div>
+        <ol class="sup-rows" id="rows"></ol>
+        <button class="btn btn-line" id="addCustom" type="button">Add something not in the list</button>
+      </div>
+
+      <div class="group">
+        <h2>Patient instructions</h2>
+        <div class="f"><label for="instructions">Printed on the schedule <span class="count">one per line</span></label><textarea id="instructions" rows="6"></textarea></div>
+      </div>
+
+      <p class="privacy">Cost prices appear only on the internal PDF. Nothing here is uploaded except a payment link, if you create one.</p>
+      <p style="display:flex;gap:22px;flex-wrap:wrap"><button class="linkbtn" id="resetBtn" type="button">Start a new client</button><button class="linkbtn" id="signout" type="button">Sign out</button></p>
+    </div>
+  </section>
+
+  <section class="preview" aria-label="Preview">
+    <div class="doc-tabs" role="tablist" aria-label="Document">
+      <button role="tab" data-doc="schedule" aria-selected="true">Schedule <small>for the client</small></button>
+      <button role="tab" data-doc="bill" aria-selected="false">Bill <small>client prices</small></button>
+      <button role="tab" data-doc="internal" aria-selected="false">Internal <small>cost prices</small></button>
+    </div>
+    <div class="stage" id="stage">
+      <div class="scaler" id="scaler"><div class="pages" id="pagesRoot"></div></div>
+    </div>
+    <div class="preview-foot">
+      <div class="status" id="status" aria-live="polite"></div>
+      <div class="acts">
+        <button class="btn btn-line" id="payBtn" type="button" hidden>Create payment link</button>
+        <button class="btn btn-line" id="allBtn" type="button">Download all 3</button>
+        <button class="btn btn-primary" id="pdfBtn" type="button"><span data-icon="download"></span>Download PDF</button>
+      </div>
+    </div>
+    <div class="pay-result" id="payResult" hidden></div>
+  </section>
+</main>
+<script type="module" src="../assets/js/supplements.js"></script>
+</body>
+</html>

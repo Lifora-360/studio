@@ -7,6 +7,7 @@ Browser tools the Lifora care team uses to make client material.
 | Client profile picture | `/profile/` | 1600 × 1600 PNG for the client's WhatsApp care-team group |
 | Investigation report | `/report/` | Branded A4 PDF listing the tests the client should get done |
 | Prescription | `/prescription/` | A4 prescription on Lifora letterhead: doctor, patient, diagnosis, medicines, advice, review date |
+| Supplements | `/supplements/` | Three A4 PDFs from one form: client schedule, client bill (with payment link and QR), internal cost sheet. Needs sign-in |
 | Payments (admin) | `/payments/` | Sign-in register: create UPI payment links, send on WhatsApp, mark paid |
 | Checkout (customers) | `/pay/?id=…` | Public page a client opens to pay by UPI app or QR |
 
@@ -34,6 +35,16 @@ small leaf beside each, and short preparation notes on the last page. Long selec
 Doctors and one-tap medicine presets live in `assets/js/rx-config.js`. Staff can also save a doctor and a
 signature image on their own device (browser storage only, never uploaded). The page warns when the content
 is too long for one A4 sheet.
+
+## Supplements
+
+The catalogue (30s and 60s price lists, cost price and client price) lives only in the Supabase table
+`supplement_catalogue`, readable by signed-in payment admins. Prices are never stored in this repository or
+shipped in the site code. Edit them in the Supabase table editor.
+
+- Bottles = daily doses × days ÷ tablets per bottle, rounded up (editable per row).
+- The schedule has no prices, the bill has client prices only, and cost prices appear only on the internal PDF.
+- "Create payment link" on the bill uses the Payments register; the link and QR are printed on the bill.
 
 ## Payments
 

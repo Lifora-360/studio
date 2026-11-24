@@ -1,0 +1,101 @@
+/* ==========================================================================
+   Supplements tool — form pieces + the three documents (schedule, bill,
+   internal). Letterhead and page base come from rx.css.
+   ========================================================================== */
+.co-muted{color:var(--muted)}
+
+/* duration */
+.seg{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.seg button{border:1px solid var(--line-2);background:var(--paper);border-radius:999px;padding:8px 14px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer}
+.seg button[aria-checked="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
+.seg-custom{display:inline-flex;align-items:center;gap:6px;margin-left:6px;font-size:14px;color:var(--muted)}
+.seg-custom input{width:76px;border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;font-size:15px}
+.seg-custom input:focus{border-color:var(--teal);outline:none;box-shadow:var(--focus)}
+
+/* catalogue picker */
+.search{position:relative;margin-bottom:10px}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--faint)}
+.search input{width:100%;background:var(--paper);border:1px solid var(--line-2);border-radius:8px;padding:10px 12px 10px 36px;font-size:15px}
+.search input:focus{border-color:var(--teal);outline:none;box-shadow:var(--focus)}
+.cat{display:flex;flex-wrap:wrap;gap:6px;max-height:172px;overflow:auto;padding:2px;margin-bottom:16px}
+.cat button{border:1px solid var(--line-2);background:var(--paper);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--teal);cursor:pointer}
+.cat button:hover{border-color:var(--teal)}
+.cat button[aria-pressed="true"]{background:#e7efe6;border-color:#cfdccf;color:var(--muted)}
+.cat .none{font-size:13px;color:var(--muted);padding:6px 2px}
+
+/* selected rows */
+.sup-rows{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:12px;counter-reset:sup}
+.sup-row{position:relative;border:1px solid var(--line);border-radius:12px;padding:14px 14px 12px 40px;background:var(--paper)}
+.sup-row::before{counter-increment:sup;content:counter(sup);position:absolute;left:14px;top:14px;font:600 15px var(--serif);color:var(--teal)}
+.sup-row.local{background:#fbfaf6}
+.sup-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.sup-name{font-weight:700;font-size:15px}
+.sup-name input{width:100%;border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;font-size:15px;font-weight:600}
+.packs{display:inline-flex;border:1px solid var(--line-2);border-radius:999px;overflow:hidden;flex:none}
+.packs button{border:0;background:none;padding:4px 10px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer}
+.packs button[aria-checked="true"]{background:var(--teal);color:#fff}
+.sup-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;margin-top:10px}
+.sup-grid .wide{grid-column:1/-1}
+.sup-grid label{display:block;font-size:12px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.sup-grid input{width:100%;border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;font-size:14px;background:var(--paper)}
+.sup-grid input:focus{border-color:var(--teal);outline:none;box-shadow:var(--focus)}
+.doses{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.doses label{text-align:center;font-weight:500;color:var(--muted);font-size:11.5px}
+.doses input{text-align:center;padding:8px 4px}
+.bottles{display:flex;align-items:center;gap:8px}
+.bottles input{width:72px}
+.bottles .auto{font-size:12px;color:var(--muted)}
+.money-line{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.money-line b{color:var(--ink);font-variant-numeric:tabular-nums}
+.money-line .neg{color:var(--alert)}
+.sup-acts{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+.sup-acts label{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink)}
+.sup-acts input{accent-color:var(--teal);width:16px;height:16px}
+.sup-acts .linkbtn{font-size:12.5px}
+
+/* document switcher above the preview */
+.doc-tabs{display:flex;gap:4px;padding:12px 20px 0;border-bottom:1px solid var(--line);background:var(--mist)}
+.doc-tabs button{border:0;background:none;padding:10px 14px;border-radius:10px 10px 0 0;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;line-height:1.2}
+.doc-tabs button small{font-weight:500;font-size:11.5px;color:var(--faint)}
+.doc-tabs button[aria-selected="true"]{background:var(--paper);color:var(--teal);box-shadow:0 -1px 0 var(--line) inset}
+.preview{grid-template-rows:auto 1fr auto auto}
+.pay-result{padding:12px 28px 16px;background:var(--paper);border-top:1px solid var(--line);font-size:13px}
+.pay-result a{color:var(--teal);overflow-wrap:anywhere}
+.pay-result .row{display:flex;gap:16px;margin-top:8px;flex-wrap:wrap}
+
+/* ---------- documents ---------- */
+.doc{--s:1}
+.doc .rx-page{padding:64px 84px 0}
+.doc-title{display:flex;align-items:baseline;justify-content:space-between;margin:32px 0 0}
+.doc-title h2{font:italic 600 calc(40px*var(--s))/1 var(--serif);color:#0e3b38;margin:0}
+.doc-title span{font-size:calc(15px*var(--s));color:#6a7b78}
+.doc-pt{display:grid;grid-template-columns:1fr auto;gap:10px 40px;margin-top:22px;font-size:calc(16.5px*var(--s))}
+.doc-pt p{margin:0}
+.doc-pt .r{text-align:right}
+.doc-pt b{font-weight:700}
+.doc-table{width:100%;border-collapse:collapse;font-size:calc(15.5px*var(--s));margin-top:calc(26px*var(--s))}
+.doc-table th{text-align:left;font-size:calc(13px*var(--s));font-weight:600;color:#6a7b78;padding:0 10px calc(10px*var(--s)) 0;border-bottom:2px solid #c9d2cf;vertical-align:bottom}
+.doc-table td{padding:calc(12px*var(--s)) 10px calc(12px*var(--s)) 0;border-bottom:1px solid #e4e9e7;vertical-align:top;line-height:1.35}
+.doc-table .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.doc-table .mid{text-align:center;width:9%}
+.doc-table th.num{text-align:right}
+.doc-table th.mid{text-align:center}
+.doc-table td.name{font-weight:700}
+.doc-table td.name small{display:block;font-weight:500;color:#6a7b78;font-size:calc(13px*var(--s));margin-top:2px}
+.doc-table .dose{font-weight:700;color:#0e3b38}
+.doc-table .dash{color:#c3ccc9}
+.doc-table tfoot td{border-bottom:0;font-weight:700;padding-top:calc(16px*var(--s))}
+.doc-table tfoot .grand td{font-size:calc(19px*var(--s));color:#0e3b38;border-top:2px solid #c9d2cf}
+.doc-table .neg{color:#b4462f}
+.doc-note{font-size:calc(14px*var(--s));color:#6a7b78;margin:14px 0 0}
+.doc-instr{margin-top:calc(30px*var(--s));font-size:calc(15px*var(--s))}
+.doc-instr h3{font-size:calc(15.5px*var(--s));font-weight:700;margin:0 0 8px}
+.doc-instr ol{margin:0;padding-left:22px;line-height:1.6}
+.doc-empty td{color:#9aa8a5;font-weight:400!important}
+.internal-tag{display:inline-block;background:#fbe9e5;color:#b4462f;font-weight:700;font-size:13px;letter-spacing:.04em;padding:6px 12px;border-radius:999px}
+.bill-pay{display:flex;gap:22px;align-items:center;margin-top:30px;padding:18px 20px;border:1px solid #e4e9e7;border-radius:14px}
+.bill-pay .qr{width:120px;height:120px;flex:none}
+.bill-pay .qr svg{width:100%;height:100%;display:block}
+.bill-pay p{margin:0;font-size:15px;line-height:1.5}
+.bill-pay b{display:block;font-size:16px;color:#0e3b38;margin-bottom:4px}
+.bill-pay span{color:#6a7b78;font-size:13.5px;overflow-wrap:anywhere}
