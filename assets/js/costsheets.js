@@ -28,7 +28,7 @@ const redraw = frameScheduler(() => {
   const sum = $('sum'); sum.innerHTML = '';
   const line = (k, v, cls) => { const d = el('div', cls); d.append(el('span', null, k), el('span', null, v)); sum.appendChild(d); };
   line('Total at cost', money(s.total));
-  line(`Lifora commission (${s.pct}%)`, '− ' + money(s.commission));
+  line(`Commission (${s.pct}%)`, '− ' + money(s.commission));
   line('Delivery fee', '+ ' + money(s.delivery));
   line('Net payable', money(s.net), 'net');
   $('status').textContent = `${draft.client_name}, bill ${draft.bill_no}, net payable ${money(s.net)}`;

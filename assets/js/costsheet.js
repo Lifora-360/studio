@@ -4,7 +4,7 @@ import { money } from './pay-config.js';
    (table supplement_orders). Only the admin's Cost sheets page draws this; staff
    can't open or download it, so it can't reach a client by mistake.
 
-   Totals:  items at cost  −  Lifora commission (commission_pct of that total)  +  delivery fee  =  net payable */
+   Totals:  items at cost  −  commission (commission_pct of that total)  +  delivery fee  =  net payable */
 
 export const SUPPLIER = 'Aegant';
 
@@ -28,7 +28,7 @@ export function costSheetPage(o) {
   const head = el('div', 'rx-head cs-head');
   head.appendChild(el('div', 'cs-supplier', SUPPLIER));
   const right = el('div', 'rx-doc');
-  right.append(el('div', 'internal-tag', 'NOT FOR CLIENTS'), el('span', null, 'Bill no. ' + o.bill_no), el('span', null, 'Date: ' + ddmmyyyy(o.bill_date)));
+  right.append(el('div', 'internal-tag', `FOR ${SUPPLIER.toUpperCase()}`), el('span', null, 'Bill no. ' + o.bill_no), el('span', null, 'Date: ' + ddmmyyyy(o.bill_date)));
   head.appendChild(right);
   p.appendChild(head);
 
@@ -56,12 +56,11 @@ export function costSheetPage(o) {
   const tf = el('tfoot');
   const sumRow = (label, value, cls) => { const r = el('tr', cls); const l = td(label); l.colSpan = 4; r.append(l, td(value, 'num')); tf.appendChild(r); };
   sumRow('Total', money(s.total), 'cs-sub');
-  sumRow(`Less Lifora commission (${s.pct}%)`, '− ' + money(s.commission), 'cs-sub');
+  sumRow(`Less commission (${s.pct}%)`, '− ' + money(s.commission), 'cs-sub');
   sumRow('Delivery fee', '+ ' + money(s.delivery), 'cs-sub');
   sumRow('Net payable', money(s.net), 'grand');
   table.append(thead, tb, tf);
   p.appendChild(table);
-  if ((o.local_items || []).length) p.appendChild(el('p', 'doc-note', `Not in this order (client buys locally): ${o.local_items.join(', ')}.`));
   page.appendChild(p);
   return page;
 }
