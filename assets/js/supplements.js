@@ -24,7 +24,8 @@ const DEFAULT_INSTRUCTIONS = [
   'Keep supplements out of reach of children and store them as directed on the product label.',
   'Contact the team if you have questions or experience any unexpected reaction.'
 ].join('\n');
-const TIMINGS = ['After food', 'Before food', 'Anytime', 'Empty Stomach', '1 hour before sleep'];
+const TIMINGS = ['After food', 'Before food', 'After food (with fat)', 'Empty stomach', 'Anytime', '1 hour before sleep'];
+const OWN = '__own';
 const DOCS = { schedule: 'Schedule', bill: 'Bill' };
 
 let client = null, catalogue = new Map(), rows = [], days = 30, docView = 'schedule', billNo = '', pay = null, uid = 1;
@@ -68,7 +69,7 @@ function addFromCatalogue(name) {
   renderRows(); renderCatalogue(); changed();
 }
 function addCustom() {
-  rows.push({ key: uid++, name: '', pack: '', timing: 'After food', m: 1, a: 0, e: 0, d: 0, manual: true, bottles: 1, local: true, custom: true, price: 0, cost: 0 });
+  rows.push({ key: uid++, name: '', pack: '', timing: 'After food', m: 1, a: 0, e: 0, d: 0, doseMode: 'grid', doseText: '', manual: true, bottles: 1, local: true, custom: true, price: 0, cost: 0 });
   renderRows(); changed();
   const inputs = document.querySelectorAll('.sup-name input'); if (inputs.length) inputs[inputs.length - 1].focus();
 }
@@ -144,21 +145,52 @@ function renderRows() {
 
     const grid = el('div', 'sup-grid');
     const timingBox = el('div', 'wide');
-    const tl = el('label', null, 'When to take'); const ti = el('input'); ti.id = `t${r.key}`; tl.htmlFor = ti.id;
-    ti.value = r.timing; ti.setAttribute('list', 'timingList');
-    ti.addEventListener('input', () => { r.timing = ti.value; changed(); });
-    timingBox.append(tl, ti);
-    const doseBox = el('div', 'wide');
-    doseBox.appendChild(el('label', null, 'Dose (whole tablets or sprays)'));
-    const doses = el('div', 'doses');
-    [['m', 'Morning'], ['a', 'Afternoon'], ['e', 'Evening'], ['d', 'Dinner']].forEach(([k, label]) => {
-      const w = el('div'); const lab = el('label', null, label); const inp = el('input');
-      inp.type = 'number'; inp.inputMode = 'numeric'; inp.min = '0'; inp.max = '9'; inp.step = '1'; inp.value = String(int(r[k]));
-      inp.id = `${k}${r.key}`; lab.htmlFor = inp.id;
-      inp.addEventListener('input', () => { r[k] = int(inp.value); if (String(int(inp.value)) !== inp.value && inp.value !== '') inp.value = String(int(inp.value)); refreshRow(li, r); changed(); });
-      w.append(lab, inp); doses.appendChild(w);
+    const tl = el('label', null, 'When to take');
+    // A real dropdown (every option always visible), plus "Type your own".
+    const sel = el('select'); sel.id = `t${r.key}`; tl.htmlFor = sel.id;
+    TIMINGS.forEach((t) => sel.appendChild(new Option(t, t)));
+    sel.appendChild(new Option('Type your own…', OWN));
+    const known = TIMINGS.find((t) => t.toLowerCase() === String(r.timing || '').trim().toLowerCase());
+    const own = el('input'); own.className = 'own-timing'; own.placeholder = 'e.g. With breakfast on Sundays'; own.setAttribute('aria-label', 'When to take, in your words');
+    if (known || !String(r.timing || '').trim()) { sel.value = known || TIMINGS[0]; own.hidden = true; if (!known) r.timing = TIMINGS[0]; }
+    else { sel.value = OWN; own.value = r.timing; }
+    sel.addEventListener('change', () => {
+      if (sel.value === OWN) { own.hidden = false; r.timing = own.value; own.focus(); }
+      else { own.hidden = true; r.timing = sel.value; }
+      changed();
     });
-    doseBox.appendChild(doses);
+    own.addEventListener('input', () => { r.timing = own.value; changed(); });
+    timingBox.append(tl, sel, own);
+    const doseBox = el('div', 'wide');
+    const textDose = r.custom && r.doseMode === 'text';
+    const dHead = el('div', 'dose-head');
+    dHead.appendChild(el('label', null, textDose ? 'Dose' : 'Dose (whole tablets or sprays)'));
+    if (r.custom) {
+      // Custom items: the usual morning/afternoon/evening/dinner counts, or any dose typed out.
+      const mode = el('div', 'packs'); mode.setAttribute('role', 'radiogroup'); mode.setAttribute('aria-label', 'How to enter the dose');
+      [['grid', 'Usual'], ['text', 'Type it']].forEach(([m, label]) => {
+        const b = el('button', null, label); b.type = 'button'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String((r.doseMode || 'grid') === m));
+        b.addEventListener('click', () => { r.doseMode = m; renderRows(); changed(); if (m === 'text') { const t = document.getElementById(`dt${r.key}`); if (t) t.focus(); } });
+        mode.appendChild(b);
+      });
+      dHead.appendChild(mode);
+    }
+    doseBox.appendChild(dHead);
+    if (textDose) {
+      const dt = el('input'); dt.id = `dt${r.key}`; dt.value = r.doseText || ''; dt.placeholder = 'e.g. 1 capsule once a week (every Sunday)'; dt.setAttribute('aria-label', 'Dose');
+      dt.addEventListener('input', () => { r.doseText = dt.value; changed(); });
+      doseBox.appendChild(dt);
+    } else {
+      const doses = el('div', 'doses');
+      [['m', 'Morning'], ['a', 'Afternoon'], ['e', 'Evening'], ['d', 'Dinner']].forEach(([k, label]) => {
+        const w = el('div'); const lab = el('label', null, label); const inp = el('input');
+        inp.type = 'number'; inp.inputMode = 'numeric'; inp.min = '0'; inp.max = '9'; inp.step = '1'; inp.value = String(int(r[k]));
+        inp.id = `${k}${r.key}`; lab.htmlFor = inp.id;
+        inp.addEventListener('input', () => { r[k] = int(inp.value); if (String(int(inp.value)) !== inp.value && inp.value !== '') inp.value = String(int(inp.value)); refreshRow(li, r); changed(); });
+        w.append(lab, inp); doses.appendChild(w);
+      });
+      doseBox.appendChild(doses);
+    }
     grid.append(timingBox, doseBox);
 
     if (!r.local) {
@@ -254,7 +286,8 @@ function scheduleDoc() {
     const name = td(r.name.trim(), 'name');
     if (r.local) name.appendChild(el('small', null, 'Buy from a local pharmacy'));
     tr.append(td(String(i + 1)), name, td(r.timing));
-    ['m', 'a', 'e', 'd'].forEach((k) => tr.appendChild(int(r[k]) ? td(String(int(r[k])), 'mid dose') : td('–', 'mid dash')));
+    if (r.custom && r.doseMode === 'text') { const c = td(r.doseText.trim() || '–', 'mid dose-text'); c.colSpan = 4; tr.appendChild(c); }
+    else ['m', 'a', 'e', 'd'].forEach((k) => tr.appendChild(int(r[k]) ? td(String(int(r[k])), 'mid dose') : td('–', 'mid dash')));
     tb.appendChild(tr);
   });
   table.append(thead, tb);
@@ -528,7 +561,6 @@ async function openApp() {
   catch (e) { host.hidden = true; $('signin').hidden = false; $('signinErr').textContent = e.message || 'Couldn’t load the supplement list.'; return; }
   host.hidden = true;
   $('signin').hidden = true; $('app').hidden = false;
-  const dl = el('datalist'); dl.id = 'timingList'; TIMINGS.forEach((t) => dl.appendChild(new Option(t))); document.body.appendChild(dl);
   const docs = [...DOCTORS, ...store.get('lifora.rx.doctors', [])];
   docs.forEach((d) => $('docList').appendChild(new Option(d.name)));
   loadDraft();
